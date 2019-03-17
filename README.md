@@ -1,2 +1,2 @@
-# bcpy
-library for BCI signal analysis
+# ssvep-python
+library for BCI SSVEP signal analysis
