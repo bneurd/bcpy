@@ -1,4 +1,7 @@
 from pylsl import StreamInlet, resolve_stream
+from multiprocessing import Process
+from bcpy.serve.flask import start_server
+import socketio
 
 
 class OpenBCIAcquisition():
@@ -18,6 +21,8 @@ class OpenBCIAcquisition():
         self.frequency = frequency
         self.channels = channels
         self.marker_stragy = marker_stragy
+        start_server()
+        self.sio = socketio.Client()
 
     def get_data(self, print_data=False):
         """Get data from lsl protocol
@@ -27,22 +32,33 @@ class OpenBCIAcquisition():
         print_data: `boolean`, optional
             show data on terminal
         """
-        if not self.marker_stragy:
-            self.__save_data_without_markers(print_data)
+
+        try:
+            if not self.marker_stragy:
+                p = Process(target=self.__save_data_without_markers,
+                            args=(print_data,))
+                p.start()
+        except KeyboardInterrupt:
+            p.terminate()
 
     def __save_data_without_markers(self, print_data):
         # first resolve an EEG stream on the lab network
         print("looking for an EEG stream...")
         streams = resolve_stream('type', 'EEG')
 
-        inlet = StreamInlet(streams[0])
+        try:
+            inlet = StreamInlet(streams[0])
+        except Exception as ex:
+            print(ex)
         # eeg timestamp, eeg data channels, markerss
         self.__data = [[], [], []]
         interval = 1 / self.frequency * 1000
         last_time = -interval
 
+        self.sio.connect('http://localhost:5000')
         while True:
             chunk, timestamp = inlet.pull_chunk()
+
             # sometimes... this loop is faster than chunk receiving
             if (timestamp):
                 for i in range(len(timestamp)):
@@ -51,5 +67,6 @@ class OpenBCIAcquisition():
                     last_time = time_now
                     self.__data[1].append(chunk[i])
 
+                    self.sio.emit("eeg_data", {"eeg": chunk[i]})
                     if (print_data):
                         print(chunk[i])
