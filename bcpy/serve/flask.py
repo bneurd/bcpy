@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory
 import socketio
 from os.path import abspath, join, dirname
 from threading import Thread
@@ -18,6 +18,11 @@ log.setLevel(logging.ERROR)
 @app.route('/')
 def sessions():
     return render_template('index.html')
+
+
+@app.route('/js/<path:path>')
+def send_js(path):
+    return send_from_directory(join(web_dir, 'js'), path)
 
 
 @sio.on('connect')

@@ -7,16 +7,33 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>bcpy EEG signal</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
-    <script>
-        var socket = io.connect('http://' + document.domain + ':' + location.port);
-        socket.on('eeg', function (msg) {
-            console.log(msg.eeg);
-        })
-    </script>
+    <script src="js/plotly-latest.min.js"></script>
 </head>
 
 <body>
-    <h1>Default page</h1>
+    <div id="chart"></div>
+    <script>
+        Plotly.plot('chart', [{
+            y: [0],
+            type: 'line'
+        }])</script>
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        var cnt = 0
+
+        socket.on('eeg', function (msg) {
+            Plotly.extendTraces('chart', { y: [msg.eeg[0]] }, [0])
+            cnt+=msg.eeg[0].length;
+
+            if (cnt > 500) {
+                Plotly.relayout('chart', {
+                    xaxis: {
+                        range: [cnt-500, cnt]
+                    }
+                })
+            }
+        })
+    </script>
 </body>
 
 </html>

@@ -56,6 +56,8 @@ class OpenBCIAcquisition():
         last_time = -interval
 
         self.sio.connect('http://localhost:5000')
+        data_to_transmit = []
+        pkg_count = 0
         while True:
             chunk, timestamp = inlet.pull_chunk()
 
@@ -67,6 +69,13 @@ class OpenBCIAcquisition():
                     last_time = time_now
                     self.__data[1].append(chunk[i])
 
-                    self.sio.emit("eeg_data", {"eeg": chunk[i]})
+                    data_to_transmit.append(chunk[i])
+                    pkg_count += 1
+
+                    if pkg_count >= self.frequency/2:
+                        self.sio.emit("eeg_data", {"eeg": data_to_transmit})
+                        data_to_transmit = []
+                        pkg_count = 0
+
                     if (print_data):
                         print(chunk[i])
