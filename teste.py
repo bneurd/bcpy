@@ -1,4 +1,4 @@
-from bcpy.signalacquisition import OpenBCIAcquisition
+from bcpy.acquisition import Connection
 
-da = OpenBCIAcquisition(125, [])
-da.get_data()
+con = Connection("openBCI", ["O1", "O2", "Oz"])
+con.listen()

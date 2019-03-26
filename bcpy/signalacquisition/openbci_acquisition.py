@@ -17,14 +17,15 @@ class OpenBCIAcquisition():
         stragey to get the markers from the experiment
     """
 
-    def __init__(self, frequency, channels, marker_stragy=None):
+    def __init__(self, frequency, channels, marker_stragy=None, print_data=False):
         self.frequency = frequency
         self.channels = channels
         self.marker_stragy = marker_stragy
         start_server()
         self.sio = socketio.Client()
+        self.print_data = print_data
 
-    def get_data(self, print_data=False):
+    def get_data(self):
         """Get data from lsl protocol
 
         Parameters
@@ -35,13 +36,12 @@ class OpenBCIAcquisition():
 
         try:
             if not self.marker_stragy:
-                p = Process(target=self.__save_data_without_markers,
-                            args=(print_data,))
+                p = Process(target=self.__save_data_without_markers)
                 p.start()
         except KeyboardInterrupt:
             p.terminate()
 
-    def __save_data_without_markers(self, print_data):
+    def __save_data_without_markers(self):
         # first resolve an EEG stream on the lab network
         print("looking for an EEG stream...")
         streams = resolve_stream('type', 'EEG')
@@ -72,10 +72,11 @@ class OpenBCIAcquisition():
                     data_to_transmit.append(chunk[i])
                     pkg_count += 1
 
-                    if pkg_count >= self.frequency/2:
-                        self.sio.emit("eeg_data", {"eeg": data_to_transmit})
+                    if pkg_count >= self.frequency/3:
+                        self.sio.emit(
+                            "eeg_data", {"eeg": data_to_transmit, "channels": self.channels})
                         data_to_transmit = []
                         pkg_count = 0
 
-                    if (print_data):
+                    if (self.print_data):
                         print(chunk[i])
