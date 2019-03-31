@@ -3,11 +3,10 @@ var cnt = 0
 var firstPackage = true
 var indices = []
 
-function transpose(a)
-{
-  return a[0].map(function (_, c) { return a.map(function (r) { return r[c]; }); });
-  // or in more modern dialect
-  // return a[0].map((_, c) => a.map(r => r[c]));
+function transpose(a) {
+    return a[0].map(function (_, c) { return a.map(function (r) { return r[c]; }); });
+    // or in more modern dialect
+    // return a[0].map((_, c) => a.map(r => r[c]));
 }
 
 socket.on('eeg', function (msg) {
@@ -16,22 +15,24 @@ socket.on('eeg', function (msg) {
         msg.channels.forEach((channel, idx) => {
             indices.push(idx)
             graphData.push({
-                y: [0],
+                x: msg.timestamp,
+                y: transpose(msg.eeg)[idx],
                 type: 'line',
                 name: channel,
                 mode: channel
             })
         })
 
-        console.log(msg.eeg)
-        console.log(indices)
-
         Plotly.newPlot('chart', graphData)
         firstPackage = false
-        console.log(transpose(msg.eeg))
     }
-    Plotly.extendTraces('chart', { y: transpose(msg.eeg)}, indices)
-    cnt += msg.eeg.length;
+    timestamp = []
+    msg.channels.forEach((channel) => {
+        timestamp.push(msg.timestamp)
+    })
+
+    Plotly.extendTraces('chart', { y: transpose(msg.eeg), x: timestamp }, indices)
+    cnt = msg.timestamp[msg.timestamp.length-1];
     if (cnt > 100) {
         Plotly.relayout('chart', {
             xaxis: {

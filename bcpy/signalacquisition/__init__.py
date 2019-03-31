@@ -1,4 +1,3 @@
-from .openbci_acquisition import OpenBCIAcquisition
+from .strategies import LSL
 
-if __name__ == "__main__":
-    openbci = OpenBCIAcquisition()
+from .acquisition import getdata
