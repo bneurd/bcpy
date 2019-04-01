@@ -26,13 +26,15 @@ socket.on('eeg', function (msg) {
         Plotly.newPlot('chart', graphData)
         firstPackage = false
     }
+
     timestamp = []
-    msg.channels.forEach((channel) => {
+    eegData = transpose(msg.eeg);
+    msg.channels.forEach((channel, idx) => {
         timestamp.push(msg.timestamp)
     })
 
-    Plotly.extendTraces('chart', { y: transpose(msg.eeg), x: timestamp }, indices)
-    cnt = msg.timestamp[msg.timestamp.length-1];
+    Plotly.extendTraces('chart', { y: eegData, x: timestamp }, indices)
+    cnt = msg.timestamp[msg.timestamp.length - 1];
     if (cnt > 100) {
         Plotly.relayout('chart', {
             xaxis: {
