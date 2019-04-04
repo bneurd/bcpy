@@ -1,8 +1,6 @@
 from pylsl import StreamInlet, resolve_stream
 from multiprocessing import Process, Value
 from multiprocessing.managers import BaseManager
-import socketio
-import requests
 from .acquisition import Acquisition, register_acquisition, AcquisitionData
 
 
@@ -20,11 +18,16 @@ class LSL(Acquisition):
         stragey to get the markers from the experiment
     """
 
-    def __init__(self, **kwargs):
-        super().__init__()
+    def __init__(self,
+                 visualizationOptions={
+                     "visualization": "WebPage",
+                     "numOfPackages": 1
+                 },
+                 **kwargs):
+        super().__init__(visualizationOptions["visualization"])
         board = kwargs.get('board')
-        self.sio = socketio.Client()
         self.channels = kwargs.get('channels')
+        self.pkgsPerSec = visualizationOptions["numOfPackages"]
         frequency = kwargs.get('frequency')
         if not frequency:
             if board == "openBCI":
@@ -43,7 +46,7 @@ class LSL(Acquisition):
 
     def terminate(self):
         self.get_data_process.terminate()
-        requests.post('http://localhost:5000/shutdown')
+        self.visualization.stop()
 
     def get_data(self):
         """Get data from lsl protocol
@@ -67,7 +70,7 @@ class LSL(Acquisition):
 
     def __get_data(self, data, recive_first_data):
         # connect to socket.io
-        self.sio.connect('http://localhost:5000')
+        self.visualization.start()
         # first resolve an EEG stream on the lab network
         print("looking for an EEG stream...")
         streams = resolve_stream('type', 'EEG')
@@ -97,11 +100,10 @@ class LSL(Acquisition):
                     timestamp_to_tramsmit.append(time_now)
                     pkg_count += 1
 
-                    if pkg_count >= self.frequency/3:
-                        self.sio.emit(
-                            "eeg_data", {"eeg": data_to_transmit,
-                                         "channels": self.channels,
-                                         "timestamp": timestamp_to_tramsmit})
+                    if pkg_count >= self.frequency/self.pkgsPerSec:
+                        self.visualization.send_data(timestamp_to_tramsmit,
+                                                     data_to_transmit,
+                                                     self.channels)
                         data_to_transmit = []
                         timestamp_to_tramsmit = []
                         pkg_count = 0

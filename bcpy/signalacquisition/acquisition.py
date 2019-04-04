@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from bcpy.serve.flask import start_server
+from ..realtimevisualization import realtimevisualization
 
 
 class AcquisitionError(Exception):
@@ -10,8 +10,8 @@ class Acquisition(ABC):
     """
     """
 
-    def __init__(self):
-        self.server_thread = start_server()
+    def __init__(self, visualization):
+        self.visualization = realtimevisualization(visualization)
 
     @abstractmethod
     def get_data(self):

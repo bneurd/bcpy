@@ -1,15 +1,17 @@
 from flask import Flask, render_template, send_from_directory, request
-import socketio
 from os.path import abspath, join, dirname
 from threading import Thread
 import logging
+import zmq
 
-sio = socketio.Server(async_mode='threading')
+context = zmq.Context()
+socket = context.socket(zmq.PUB)
+socket.bind("tcp://*:5555")
+
 web_dir = abspath(join(dirname(__file__), '../web'))
 app = Flask(__name__, template_folder=web_dir)
 # app.config['SECRET_KEY'] = 'vnkdjnfjknfl1232#'
 app.config.debug = False
-app.wsgi_app = socketio.Middleware(sio, app.wsgi_app)
 
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
@@ -32,25 +34,10 @@ def send_js(path):
     return send_from_directory(join(web_dir, 'js'), path)
 
 
-@app.route('/css/<path:path>')
-def send_css(path):
-    return send_from_directory(join(web_dir, 'css'), path)
-
-
 @app.route('/shutdown', methods=['POST'])
 def shutdown():
     shutdown_server()
     return 'Server shutting down...'
-
-
-@sio.on('connect')
-def connect(sid, environ):
-    print('connect ', sid)
-
-
-@sio.on('eeg_data')
-def my_custom_event(sid, data):
-    sio.emit('eeg', data, skip_sid=sid)
 
 
 def run():
@@ -64,4 +51,4 @@ def run():
 def start_server():
     server_thread = Thread(target=run)
     server_thread.start()
-    return server_thread
+    return socket
