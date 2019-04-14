@@ -6,16 +6,17 @@
 #
 certifi==2019.3.9         # via requests
 chardet==3.0.4            # via requests
-click==7.0                # via uvicorn
-h11==0.8.1                # via uvicorn
-httptools==0.0.13         # via uvicorn
+click==7.0                # via flask
+flask==1.0.2
 idna==2.8                 # via requests
+itsdangerous==1.1.0       # via flask
+jinja2==2.10.1            # via flask
+markupsafe==1.1.1         # via jinja2
+paho-mqtt==1.4.0
 pylsl==1.12.2
 python-engineio==3.5.0    # via python-socketio
 python-socketio==3.1.2
 requests==2.21.0
 six==1.12.0               # via python-engineio, python-socketio
 urllib3==1.24.1           # via requests
-uvicorn==0.6.1
-uvloop==0.12.2            # via uvicorn
-websockets==7.0           # via uvicorn
+werkzeug==0.15.2          # via flask

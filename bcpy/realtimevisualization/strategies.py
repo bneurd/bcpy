@@ -2,6 +2,7 @@ from .realtime import Realtime, register_realtime
 from ..serve.flask import start_server
 import requests
 import socketio
+import json
 
 
 @register_realtime
@@ -16,8 +17,9 @@ class WebPage(Realtime):
     def stop(self):
         requests.post('http://localhost:5000/shutdown')
 
-    def send_data(self, timestamp, eeg, channels):
+    def send_data(self, timestamp, eeg, channels, fs):
         self.sio.emit(
-            "eeg_data", {"eeg": eeg,
-                         "channels": channels,
-                         "timestamp": timestamp})
+            "eeg_data", json.dumps({"eeg": eeg,
+                                    "channels": channels,
+                                    "timestamp": timestamp,
+                                    "fs": fs}))

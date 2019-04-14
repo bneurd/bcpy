@@ -1,0 +1,11 @@
+.element-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.element-right {
+    position: absolute;
+    width: 10%;
+    right: 1%;
+}

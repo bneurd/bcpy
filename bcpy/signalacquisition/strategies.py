@@ -2,6 +2,7 @@ from pylsl import StreamInlet, resolve_stream
 from multiprocessing import Process, Value
 from multiprocessing.managers import BaseManager
 from .acquisition import Acquisition, register_acquisition, AcquisitionData
+import os
 
 
 @register_acquisition
@@ -21,7 +22,7 @@ class LSL(Acquisition):
     def __init__(self,
                  visualizationOptions={
                      "visualization": "WebPage",
-                     "numOfPackages": 1
+                     "numOfPackages": 250
                  },
                  **kwargs):
         super().__init__(visualizationOptions["visualization"])
@@ -103,7 +104,9 @@ class LSL(Acquisition):
                     if pkg_count >= self.frequency/self.pkgsPerSec:
                         self.visualization.send_data(timestamp_to_tramsmit,
                                                      data_to_transmit,
-                                                     self.channels)
+                                                     self.channels,
+                                                     self.frequency)
+                        # os.system("mosquitto_pub -d -t game -m " + str(60))
                         data_to_transmit = []
                         timestamp_to_tramsmit = []
                         pkg_count = 0
