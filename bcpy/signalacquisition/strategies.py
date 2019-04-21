@@ -2,7 +2,7 @@ from pylsl import StreamInlet, resolve_stream
 from multiprocessing import Process, Value
 from multiprocessing.managers import BaseManager
 from .acquisition import Acquisition, register_acquisition, AcquisitionData
-import os
+import time
 
 
 @register_acquisition
@@ -24,10 +24,11 @@ class LSL(Acquisition):
                      "visualization": "WebPage",
                      "numOfPackages": 250
                  },
+                 channels=["Fp1", "Fp2", "C3", "C4", "T5", "T6", "O1", "O2"],
                  **kwargs):
         super().__init__(visualizationOptions["visualization"])
         board = kwargs.get('board')
-        self.channels = kwargs.get('channels')
+        self.channels = channels
         self.pkgsPerSec = visualizationOptions["numOfPackages"]
         frequency = kwargs.get('frequency')
         if not frequency:
@@ -98,7 +99,7 @@ class LSL(Acquisition):
                     last_time = time_now
 
                     data_to_transmit.append(chunk[i])
-                    timestamp_to_tramsmit.append(time_now)
+                    timestamp_to_tramsmit.append(time.time())
                     pkg_count += 1
 
                     if pkg_count >= self.frequency/self.pkgsPerSec:

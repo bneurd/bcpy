@@ -1,7 +1,7 @@
 from bcpy.signalacquisition import getdata
 from time import sleep
 
-p, data = getdata("LSL", board="openBCI", channels=["O1", "O2", "Oz"])
+p, data = getdata("LSL", board="openBCI")
 
 while(not p.is_receiving_data()):
     pass

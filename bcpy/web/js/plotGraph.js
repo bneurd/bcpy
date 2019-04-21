@@ -1,14 +1,13 @@
 var socket = io.connect('http://' + document.domain + ':' + location.port);
-var options;
 var rawData = []
 var timestamp = []
 var firstPackage = true;
-var MaxNumOfPoints = 200;
+var MaxNumOfPoints = 500;
 var chart;
 var graphData = []
 var numOfPoints = 17
 var channelsNames;
-var series;
+var fs = 0;
 
 $("#con-status").html("disconnected")
 $("#con-status").addClass("text-danger")
@@ -21,6 +20,7 @@ $("#numOfPkgRange").on('input', function () {
 })
 
 $("#MaxOfPointsRange").val(MaxNumOfPoints)
+$("#MaxOfPoints").html(MaxNumOfPoints)
 
 $("#MaxOfPointsRange").on('input', function () {
     MaxNumOfPoints = $("#MaxOfPointsRange").val()
@@ -31,8 +31,6 @@ function transpose(a) {
     if (a[0] && a[0].map) {
         return a[0].map(function (_, c) { return a.map(function (r) { if (r) return r[c]; }); });
     }
-    // or in more modern dialect
-    // return a[0].map((_, c) => a.map(r => r[c]));
 }
 
 const initGraph = (channels) => {
@@ -40,7 +38,7 @@ const initGraph = (channels) => {
     var time = timestamp.shift();
 
     channels.forEach((channel, idx) => {
-        $("#channels").append(`<div id=${channel}></div>`)
+        $("#channels").append(`<div class="row"><div class="col-sm-1" style="padding: 30px;">${channel}</div><div class="col-sm-10" id=${channel}></div></div>`)
         graphData.push({
             x: [time],
             y: [newValue[idx]],
@@ -65,7 +63,7 @@ const initGraph = (channels) => {
             showlegend: false
         };
 
-        Plotly.newPlot(channel, [graphData[idx]], layout, { displayModeBar: false, staticPlot: true })
+        Plotly.newPlot(channel, [graphData[idx]], layout, { displayModeBar: false, staticPlot: true, responsive: true })
     });
 }
 
@@ -73,7 +71,6 @@ const addData = () => {
     // console.log("teste")
     var dateToAdd = []
     var time = []
-    var timeForEachPoint = []
 
     const size = rawData.length
     for (let i = 0; i < size; i++) {
@@ -110,6 +107,8 @@ socket.on('eeg', function (msg) {
     data = JSON.parse(msg)
     rawData = rawData.concat(data.eeg);
     timestamp = timestamp.concat(data.timestamp)
+    fs = data.fs
+    $("#fs").html(fs)
 
     // console.log(data.eeg.length)
 
