@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-
 class RealtimeError(Exception):
     pass
 
@@ -9,12 +8,20 @@ class Realtime(ABC):
     """
     """
 
+    def __init__(self, options):
+        self.channels = options["channels"]
+        self.fs = options["fs"]
+
     @abstractmethod
     def start(self):
         pass
 
     @abstractmethod
     def stop(self):
+        pass
+
+    @abstractmethod
+    def send_data(self, eeg):
         pass
 
 
@@ -53,12 +60,16 @@ def register_realtime(cls):
     return cls
 
 
-def realtimevisualization(r):
+def realtimevisualization(r, dataIter, options):
     if isinstance(r, str):
         if not (r in realtime_strategies):
             raise RealtimeError("Unknown realtime strategy {r}".format(r=r))
 
-        acq = realtime_strategies[r]()
-        return acq
+        acq = realtime_strategies[r](options)
+        acq.start()
+        acq.show_realtime_data(dataIter)
+        return acq.data
     elif isinstance(r, Realtime):
-        return r
+        r.start()
+        r.show_realtime_data(dataIter)
+        return r.data

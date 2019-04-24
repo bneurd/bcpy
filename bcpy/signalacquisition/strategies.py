@@ -1,8 +1,6 @@
 from pylsl import StreamInlet, resolve_stream
-from multiprocessing import Process, Value
-from multiprocessing.managers import BaseManager
-from .acquisition import Acquisition, register_acquisition, AcquisitionData
-import time
+import threading
+from .acquisition import Acquisition, register_acquisition
 
 
 @register_acquisition
@@ -26,7 +24,6 @@ class LSL(Acquisition):
                  },
                  channels=["Fp1", "Fp2", "C3", "C4", "T5", "T6", "O1", "O2"],
                  **kwargs):
-        super().__init__(visualizationOptions["visualization"])
         board = kwargs.get('board')
         self.channels = channels
         self.pkgsPerSec = visualizationOptions["numOfPackages"]
@@ -41,8 +38,6 @@ class LSL(Acquisition):
                 # TODO: raise error
                 pass
 
-        self.recive_first_data = Value('i', 0)
-
     def is_receiving_data(self):
         return bool(self.recive_first_data.value)
 
@@ -55,24 +50,17 @@ class LSL(Acquisition):
 
         Return
         ------
-        - multiprocessing.Process
-            process geting data
+        - 
 
         """
 
-        BaseManager.register('AcquisitionData', AcquisitionData)
-        manager = BaseManager()
-        manager.start()
-        inst = manager.AcquisitionData()
-        self.get_data_process = Process(target=self.__get_data,
-                                        args=(inst, self.recive_first_data))
-        self.get_data_process.start()
+        t = threading.Thread(target=self.__get_data_thread)
+        t.start()
+    
+    def __get_data_thread(self):
+        self.data = self.__get_data()
 
-        return self, inst
-
-    def __get_data(self, data, recive_first_data):
-        # connect to socket.io
-        self.visualization.start()
+    def __get_data(self):
         # first resolve an EEG stream on the lab network
         print("looking for an EEG stream...")
         streams = resolve_stream('type', 'EEG')
@@ -85,31 +73,13 @@ class LSL(Acquisition):
         interval = 1 / self.frequency * 1000
         last_time = -interval
 
-        data_to_transmit = []
-        timestamp_to_tramsmit = []
-        pkg_count = 0
         while True:
             chunk, timestamp = inlet.pull_chunk()
 
             # sometimes... this loop is faster than chunk receiving
             if (timestamp):
-                recive_first_data.value = 1
                 for i in range(len(timestamp)):
                     time_now = last_time + interval
                     last_time = time_now
 
-                    data_to_transmit.append(chunk[i])
-                    timestamp_to_tramsmit.append(time.time())
-                    pkg_count += 1
-
-                    if pkg_count >= self.frequency/self.pkgsPerSec:
-                        self.visualization.send_data(timestamp_to_tramsmit,
-                                                     data_to_transmit,
-                                                     self.channels,
-                                                     self.frequency)
-                        # os.system("mosquitto_pub -d -t game -m " + str(60))
-                        data_to_transmit = []
-                        timestamp_to_tramsmit = []
-                        pkg_count = 0
-
-                    data.add_data(time_now, chunk[i])
+                    yield(chunk[i])
