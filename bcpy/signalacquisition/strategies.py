@@ -17,26 +17,12 @@ class LSL(Acquisition):
         stragey to get the markers from the experiment
     """
 
-    def __init__(self,
-                 visualizationOptions={
-                     "visualization": "WebPage",
-                     "numOfPackages": 250
-                 },
-                 channels=["Fp1", "Fp2", "C3", "C4", "T5", "T6", "O1", "O2"],
-                 **kwargs):
-        board = kwargs.get('board')
-        self.channels = channels
-        self.pkgsPerSec = visualizationOptions["numOfPackages"]
-        frequency = kwargs.get('frequency')
-        if not frequency:
-            if board == "openBCI":
-                if len(self.channels) < 8:
-                    self.frequency = 250
-                else:
-                    self.frequency = 125
+    def __init__(self, **kargs):
+        if (kargs["board"] == "openBCI"):
+            if (kargs["n_channels"] < 8):
+                self.frequency = 256
             else:
-                # TODO: raise error
-                pass
+                self.frequency = 125
 
     def is_receiving_data(self):
         return bool(self.recive_first_data.value)
@@ -48,15 +34,13 @@ class LSL(Acquisition):
     def get_data(self):
         """Get data from lsl protocol
 
-        Return
-        ------
-        - 
+        data is getting on a new thread and create an iterator to return the value
 
         """
 
         t = threading.Thread(target=self.__get_data_thread)
         t.start()
-    
+
     def __get_data_thread(self):
         self.data = self.__get_data()
 

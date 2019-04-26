@@ -20,11 +20,11 @@ class WebPage(Realtime):
         requests.post('http://localhost:5000/shutdown')
 
     def send_data(self, eeg):
+        # print("oi")
         self.sio.emit(
-            "eeg_data", {"eeg": eeg,
-                         "channels": self.channels,
-                         "fs": self.fs})
-        self.sio.wait(seconds=1)
+            "eeg_data", json.dumps({"eeg": eeg,
+                                    "channels": self.channels,
+                                    "fs": self.fs}))
 
     def show_realtime_data(self, dataIter):
         t = threading.Thread(

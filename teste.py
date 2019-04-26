@@ -6,8 +6,9 @@ options = {
     "fs": 125
 }
 
-data = realtimevisualization("WebPage", getdata("LSL", board="openBCI"), options)
+rawData = realtimevisualization(
+    "WebPage", getdata("LSL", board="openBCI", n_channels=8), options)
 
 
-# while(True):
-#     print(next(data, None))
+while(True):
+    next(rawData, None)

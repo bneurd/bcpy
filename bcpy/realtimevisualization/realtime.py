@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import time
 
 class RealtimeError(Exception):
     pass
@@ -65,7 +66,9 @@ def realtimevisualization(r, dataIter, options):
         if not (r in realtime_strategies):
             raise RealtimeError("Unknown realtime strategy {r}".format(r=r))
 
+        # TODO: Sync this
         acq = realtime_strategies[r](options)
+        time.sleep(0.5)
         acq.start()
         acq.show_realtime_data(dataIter)
         return acq.data

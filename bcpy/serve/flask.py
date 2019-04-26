@@ -50,7 +50,6 @@ def connect(sid, environ):
 
 @sio.on('eeg_data')
 def my_custom_event(sid, data):
-    print(data)
     sio.emit('eeg', data, skip_sid=sid)
 
 
