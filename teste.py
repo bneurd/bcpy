@@ -2,15 +2,13 @@ from bcpy.signalacquisition import getdata
 from bcpy.realtimevisualization import realtimevisualization
 
 options = {
-    "channels": ["Fp1", "Fp2", "C3",
-                 "C4", "T5", "T6", "O1", "O2"
-                 ],
-    "fs": 250
+    "channels": ["O1", "O2"],
+    "fs": 128
 }
 
 rawData = realtimevisualization(
-    "WebPage", getdata("LSL", board="openBCI", n_channels=8), options)
+    "WebPage", getdata("LSL", board="openBCI", n_channels=2), options)
 
 
 while(True):
-    next(rawData, None)
+    print(next(rawData, None))

@@ -1,5 +1,4 @@
 from pylsl import StreamInlet, resolve_stream
-import threading
 from .acquisition import Acquisition, register_acquisition
 
 
@@ -32,19 +31,6 @@ class LSL(Acquisition):
         self.visualization.stop()
 
     def get_data(self):
-        """Get data from lsl protocol
-
-        data is getting on a new thread and create an iterator to return the value
-
-        """
-
-        t = threading.Thread(target=self.__get_data_thread)
-        t.start()
-
-    def __get_data_thread(self):
-        self.data = self.__get_data()
-
-    def __get_data(self):
         # first resolve an EEG stream on the lab network
         print("looking for an EEG stream...")
         streams = resolve_stream('type', 'EEG')

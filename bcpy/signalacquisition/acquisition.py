@@ -58,8 +58,7 @@ def getdata(a, *args, **kargs):
             raise AcquisitionError("Unknown acquisition {a}".format(a=a))
 
         acq = acquisition_strategies[a](**kargs)
-        acq.get_data(*args)
-        return acq.data
+        # acq.get_data(*args)
+        return acq.get_data()
     elif isinstance(a, Acquisition):
-        a.get_data(*args)
-        return a.data
+        return a.get_data(*args)

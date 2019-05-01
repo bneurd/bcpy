@@ -70,9 +70,7 @@ def realtimevisualization(r, dataIter, options):
         acq = realtime_strategies[r](options)
         time.sleep(0.5)
         acq.start()
-        acq.show_realtime_data(dataIter)
-        return acq.data
+        return acq.show_realtime_data(dataIter)
     elif isinstance(r, Realtime):
         r.start()
-        r.show_realtime_data(dataIter)
-        return r.data
+        return r.show_realtime_data(dataIter)
