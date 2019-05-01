@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import time
 
+
 class RealtimeError(Exception):
     pass
 

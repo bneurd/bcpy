@@ -3,6 +3,8 @@ from ..serve.flask import start_server
 import requests
 import socketio
 import json
+import numpy as np
+from time import sleep
 
 
 @register_realtime
@@ -28,5 +30,11 @@ class WebPage(Realtime):
     def show_realtime_data(self, dataIter):
         while(True):
             data = next(dataIter)
-            self.send_data(data)
-            yield(data)
+            if (len(np.array(data).shape) == 1):
+                self.send_data(data)
+                yield(data)
+            else:
+                for each_data in data:
+                    self.send_data(each_data)
+                    sleep(1/self.fs)
+                yield(data)
