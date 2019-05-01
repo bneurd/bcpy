@@ -1,6 +1,5 @@
 from .realtime import Realtime, register_realtime
 from ..serve.flask import start_server
-import threading
 import requests
 import socketio
 import json
@@ -27,14 +26,6 @@ class WebPage(Realtime):
                                     "fs": self.fs}))
 
     def show_realtime_data(self, dataIter):
-        t = threading.Thread(
-            target=self.__show_realtime_data_thread, args=(dataIter,))
-        t.start()
-
-    def __show_realtime_data_thread(self, dataIter):
-        self.data = self.__show_realtime_data(dataIter)
-
-    def __show_realtime_data(self, dataIter):
         while(True):
             data = next(dataIter)
             self.send_data(data)
