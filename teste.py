@@ -1,6 +1,6 @@
-from bcpy.signalacquisition import getdata
+from bcpy.acquisition import getdata
 from bcpy.realtimevisualization import realtimevisualization
-from bcpy.signalutils.buffer import makebuff
+from bcpy.utils.buffer import makebuff
 
 options = {
     "channels": ["O1", "O2"],
