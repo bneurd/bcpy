@@ -4,8 +4,7 @@ import requests
 import socketio
 import json
 import numpy as np
-from time import sleep
-
+from time import sleep, time
 
 @register_realtime
 class WebPage(Realtime):
@@ -31,6 +30,10 @@ class WebPage(Realtime):
         if (len(np.array(data).shape) == 1):
             self.send_data(data)
         else:
+
             for each_data in data:
+                begin = time()
                 self.send_data(each_data)
-                sleep(1/self.fs)
+                # wait for 1/fs... but consider the send delay
+                time_remain = (1/self.fs) - (time() - begin)
+                sleep(time_remain)
