@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import time
+import threading
 
 
 class RealtimeError(Exception):
@@ -33,7 +34,7 @@ realtime_strategies = {}
 def register_realtime(cls):
     """ register a new strategy to realtime dictionary
 
-    This function was made to be used as decorator on 
+    This function was made to be used as decorator on
     subclass of bcpy.realtimevisualization.Realtime
 
     Parameters
@@ -63,6 +64,7 @@ def register_realtime(cls):
 
 
 def realtimevisualization(r, dataIter, options):
+
     if isinstance(r, str):
         if not (r in realtime_strategies):
             raise RealtimeError("Unknown realtime strategy {r}".format(r=r))
@@ -71,7 +73,18 @@ def realtimevisualization(r, dataIter, options):
         acq = realtime_strategies[r](options)
         time.sleep(0.5)
         acq.start()
-        return acq.show_realtime_data(dataIter)
+
+        while (True):
+            data = next(dataIter)
+            t = threading.Thread(target=acq.show_realtime_data, args=(data,))
+            t.start()
+            yield(data)
+            t.join()
     elif isinstance(r, Realtime):
-        r.start()
-        return r.show_realtime_data(dataIter)
+        acq = r
+        while (True):
+            data = next(dataIter)
+            t = threading.Thread(target=acq.show_realtime_data, args=(data,))
+            t.start()
+            yield(data)
+            t.join()

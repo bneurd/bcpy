@@ -27,14 +27,10 @@ class WebPage(Realtime):
                                     "channels": self.channels,
                                     "fs": self.fs}))
 
-    def show_realtime_data(self, dataIter):
-        while(True):
-            data = next(dataIter)
-            if (len(np.array(data).shape) == 1):
-                self.send_data(data)
-                yield(data)
-            else:
-                for each_data in data:
-                    self.send_data(each_data)
-                    sleep(1/self.fs)
-                yield(data)
+    def show_realtime_data(self, data):
+        if (len(np.array(data).shape) == 1):
+            self.send_data(data)
+        else:
+            for each_data in data:
+                self.send_data(each_data)
+                sleep(1/self.fs)
