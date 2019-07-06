@@ -6,6 +6,7 @@ import json
 import numpy as np
 from time import sleep, time
 
+
 @register_realtime
 class WebPage(Realtime):
     def __init__(self, options):
@@ -24,7 +25,9 @@ class WebPage(Realtime):
         self.sio.emit(
             "eeg_data", json.dumps({"eeg": eeg,
                                     "channels": self.channels,
-                                    "fs": self.fs}))
+                                    "fs": self.fs,
+                                    "timestamp": time() * 1000
+                                    }))
 
     def show_realtime_data(self, data):
         if (len(np.array(data).shape) == 1):
@@ -33,7 +36,10 @@ class WebPage(Realtime):
 
             for each_data in data:
                 begin = time()
-                self.send_data(each_data)
+                if (isinstance(each_data, np.ndarray)):
+                    self.send_data(each_data.tolist())
+                else:
+                    self.send_data(each_data)
                 # wait for 1/fs... but consider the send delay
                 time_remain = (1/self.fs) - (time() - begin)
                 sleep(time_remain)
