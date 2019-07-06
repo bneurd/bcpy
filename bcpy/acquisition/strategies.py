@@ -1,10 +1,9 @@
-from pylsl import StreamInlet, resolve_stream
-from .acquisition import Acquisition, register_acquisition
-import time
+import pylsl
+from . import acquisition
 
 
-@register_acquisition
-class LSL(Acquisition):
+@acquisition.register_acquisition
+class LSL(acquisition.Acquisition):
     """Reciver using the protocol LSL to get data
 
     Parameters
@@ -30,10 +29,10 @@ class LSL(Acquisition):
     def get_data(self):
         # first resolve an EEG stream on the lab network
         print("looking for an EEG stream...")
-        streams = resolve_stream('type', 'EEG')
+        streams = pylsl.resolve_stream('type', 'EEG')
 
         try:
-            inlet = StreamInlet(streams[0])
+            inlet = pylsl.StreamInlet(streams[0])
         except Exception as ex:
             raise ex
 

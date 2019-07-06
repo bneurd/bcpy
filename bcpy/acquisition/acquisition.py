@@ -6,8 +6,9 @@ class AcquisitionError(Exception):
 
 
 class Acquisition(ABC):
+    """Acquisition abstract class
     """
-    """
+
     @abstractmethod
     def get_data(self):
         return iter()
@@ -52,13 +53,26 @@ def register_acquisition(cls):
     return cls
 
 
-def getdata(a, *args, **kargs):
-    if isinstance(a, str):
-        if not (a in acquisition_strategies):
-            raise AcquisitionError("Unknown acquisition {a}".format(a=a))
+def getdata(strategy, *args, **kargs):
+    """Get data using some strategy
 
-        acq = acquisition_strategies[a](**kargs)
+    Parameters
+    ----------
+    - strategy: `str` or `Acquisition`
+        Strategy to get data
+
+    Returns
+    -------
+    - data: `generator` of `[n_channels]`
+    """
+
+    if isinstance(strategy, str):
+        if not (strategy in acquisition_strategies):
+            raise AcquisitionError(
+                "Unknown acquisition {a}".format(a=strategy))
+
+        acq = acquisition_strategies[strategy](**kargs)
         # acq.get_data(*args)
         return acq.get_data()
-    elif isinstance(a, Acquisition):
-        return a.get_data(*args)
+    elif isinstance(strategy, Acquisition):
+        return strategy.get_data(*args)
