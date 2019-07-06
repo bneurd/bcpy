@@ -8,7 +8,7 @@ class RealtimeError(Exception):
 
 
 class Realtime(ABC):
-    """
+    """Realtime abstract class
     """
 
     def __init__(self, options):
@@ -64,6 +64,17 @@ def register_realtime(cls):
 
 
 def realtimevisualization(r, dataIter, options):
+    """Send data to GUI
+
+    Parameters
+    ----------
+    - dataIter: `str` or `Realtime`
+        Strategy to send data
+
+    Returns
+    -------
+    - data: `generator` of `[n_channels]`
+    """
 
     if isinstance(r, str):
         if not (r in realtime_strategies):
@@ -74,14 +85,17 @@ def realtimevisualization(r, dataIter, options):
         time.sleep(0.5)
         acq.start()
 
+        # TODO: put this while True inside thread
         while (True):
             data = next(dataIter)
             t = threading.Thread(target=acq.show_realtime_data, args=(data,))
             t.start()
+            # TODO: Remove this yield
             yield(data)
             t.join()
     elif isinstance(r, Realtime):
         acq = r
+        # TODO: Same in here
         while (True):
             data = next(dataIter)
             t = threading.Thread(target=acq.show_realtime_data, args=(data,))
