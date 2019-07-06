@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from scipy.signal import butter, filtfilt, iirfilter
+from scipy import signal
 import numpy as np
 
 
@@ -32,39 +32,39 @@ class ButterBandPass(Filter):
         nyq = fs * 0.5
         low = lowcut / nyq
         high = highcut / nyq
-        b, a = butter(order, [low, high], btype='bandpass')
+        b, a = signal.butter(order, [low, high], btype='bandpass')
 
         self.b = b
         self.a = a
 
     def process(self, data):
-        return filtfilt(self.b, self.a, data, axis=1)
+        return signal.filtfilt(self.b, self.a, data, axis=1)
 
 
 class ButterLowPass(Filter):
     def __init__(self, lowcut, fs=256, order=4):
         nyq = fs * 0.5
         low = lowcut / nyq
-        b, a = butter(order, low, btype='lowpass')
+        b, a = signal.butter(order, low, btype='lowpass')
 
         self.b = b
         self.a = a
 
     def process(self, data):
-        return filtfilt(self.b, self.a, data, axis=1)
+        return signal.filtfilt(self.b, self.a, data, axis=1)
 
 
 class ButterHighPass(Filter):
     def __init__(self, highcut, fs=256, order=4):
         nyq = fs * 0.5
         high = highcut / nyq
-        b, a = butter(order, high, btype='highpass')
+        b, a = signal.butter(order, high, btype='highpass')
 
         self.b = b
         self.a = a
 
     def process(self, data):
-        return filtfilt(self.b, self.a, data, axis=1)
+        return signal.filtfilt(self.b, self.a, data, axis=1)
 
 
 class Notch(Filter):
@@ -73,13 +73,14 @@ class Notch(Filter):
         low = (cutoff - var) / nyq
         high = (cutoff + var) / nyq
 
-        b, a = iirfilter(order, [low, high], btype='bandstop', ftype="butter")
+        b, a = signal.iirfilter(
+            order, [low, high], btype='bandstop', ftype="butter")
 
         self.b = b
         self.a = a
 
     def process(self, data):
-        return filtfilt(self.b, self.a, data, axis=-1)
+        return signal.sfiltfilt(self.b, self.a, data, axis=-1)
 
 
 def apply_filter(dataIter, lo=None, hi=None, **kargs):
