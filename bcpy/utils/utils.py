@@ -1,3 +1,7 @@
+def flow(iterator):
+    while(True):
+        next(iterator)
+
 def makebuff(iterator, size=128):
 
     buff = []
