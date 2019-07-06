@@ -1,31 +1,19 @@
-from bcpy.signalacquisition import getdata
-from time import sleep
+from bcpy.acquisition import getdata
+from bcpy.realtimevisualization import realtimevisualization
+from bcpy.utils import makebuff, flow
+from bcpy.processing import apply_filter
 
-p, data = getdata("LSL", board="openBCI")
+options = {
+    "channels": ["AF3", "F7", "F3", "FC5", "T7", "P7", "O1", "O2"],
+    "fs": 256
+}
 
-while(not p.is_receiving_data()):
-    pass
-print("Stream started")
-data.set_marker(2)
-sleep(2)
-data.set_marker(1)
-sleep(2)
-# p.terminate()
-print("data acquisition end")
-print("\n\n\n")
-timeStamp, eeg, markers = data.get_values()
+data = getdata("LSL")
+buff = makebuff(data, 256)
+filter_buff = apply_filter(buff, lo=8, hi=50)
+filter_buff = apply_filter(filter_buff, lo=8, hi=50)
+buffvis = realtimevisualization(
+    "WebPage", filter_buff, options)
 
-noMarkers = 0
-marker2 = 0
-maeker1 = 0
-for marker in markers:
-    if marker == -1:
-        noMarkers += 1
-    elif marker == 1:
-        maeker1 += 1
-    elif marker == 2:
-        marker2 += 1
 
-print("-1:", noMarkers)
-print("1:", maeker1)
-print("2:", marker2)
+flow(buffvis)

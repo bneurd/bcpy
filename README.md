@@ -11,38 +11,27 @@ This module handles the Acquisition from an EEG. At this moment, this module can
 ### How to use
 
 ``` python
-from bcpy.signalacquisition import getdata
+from bcpy.acquisition import getdata
+from bcpy.realtimevisualization import realtimevisualization
+from bcpy.utils import makebuff, flow
+from bcpy.processing import apply_filter
 
-from time import sleep
+options = {
+    "channels": ["AF3", "F7", "F3", "FC5", "T7", "P7", "O1", "O2"],
+    "fs": 256
+}
 
-ConnectionProccess, data = getdata("LSL", board="openBCI",channels=["O1", "O2", "Oz"])
+data = getdata("LSL")
+buff = makebuff(data, 256)
+# apply bandpass filter [5-50]
+filter_buff = apply_filter(buff, lo=5, hi=50, fs=256)
+buffvis = realtimevisualization(
+    "WebPage", filter_buff, options)
 
-# wait untill first data arrive
-while(not p.is_receiving_data()):
-    pass
 
-print("Stream started")
-# set marker with label 2
-data.set_marker(2)
-
-# wait 2 seconds
-sleep(2)
-
-# set marker with label 1
-data.set_marker(1)
-
-# wait 2 seconds
-sleep(2)
-
-# close connection
-ConnectionProccess.terminate()
-print("data acquisition end")
-print("\n\n\n")
-
-# get values
-timeStamp, eeg, markers = data.get_values()
+flow(buffvis)
 ```
 
-### Visualize data on web broswer
+### Visualize data
 
-bcpy `signalacquisition` modules start a web serve to handle the data visualization. this web server can be seen on `http://localhost:5000`
+For now, the GUI to visualize the data is on the follow repository [https://github.com/igornfaustino/realtime-eeg-dashboard](https://github.com/igornfaustino/realtime-eeg-dashboard)

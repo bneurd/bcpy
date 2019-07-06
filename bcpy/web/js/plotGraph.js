@@ -27,16 +27,20 @@ $("#MaxOfPointsRange").on('input', function () {
     $("#MaxOfPoints").html(MaxNumOfPoints)
 })
 
+<<<<<<< Updated upstream
 function transpose(a) {
     if (a[0] && a[0].map) {
         return a[0].map(function (_, c) { return a.map(function (r) { if (r) return r[c]; }); });
     }
 }
 
+=======
+>>>>>>> Stashed changes
 const initGraph = (channels) => {
     var newValue = rawData.shift();
     var time = timestamp.shift();
 
+<<<<<<< Updated upstream
     channels.forEach((channel, idx) => {
         $("#channels").append(`<div class="row"><div class="col-sm-1" style="padding: 30px;">${channel}</div><div class="col-sm-10" id=${channel}></div></div>`)
         graphData.push({
@@ -65,6 +69,38 @@ const initGraph = (channels) => {
 
         Plotly.newPlot(channel, [graphData[idx]], layout, { displayModeBar: false, staticPlot: true, responsive: true })
     });
+=======
+    chart = new Chart(document.getElementById('chart').getContext('2d'), {
+        type: "line",
+        data: {
+            datasets: [{
+                data: [{
+                    x: 0,
+                    y: 20
+                }, {
+                    x: 1,
+                    y: -10
+                }, {
+                    x: 2,
+                    y: 10
+                }]
+            }]
+        },
+        options: {
+            elements: {
+                line: {
+                    tension: 0 // disables bezier curves
+                }
+            },
+            animation: {
+                duration: 0,
+            },
+            tooltips: {
+                enabled: false
+            }
+        }
+    })
+>>>>>>> Stashed changes
 }
 
 const addData = () => {
@@ -79,11 +115,28 @@ const addData = () => {
         // cnt++;
     }
 
+<<<<<<< Updated upstream
     dateToAdd = transpose(dateToAdd);
     channelsNames.forEach((channel, idx) => {
         var channelData = [dateToAdd[idx]]
         if (channelData) {
             Plotly.extendTraces(channel, { y: channelData, x: [time] }, [0])
+=======
+
+    dateToAdd = [dateToAdd];
+    // console.log(dateToAdd)
+    if (dateToAdd) {
+        // dateToAdd.forEach((channel, idx) => {
+        timeForEachPoint.push(time)
+        // })
+        Plotly.extendTraces('chart', { y: dateToAdd, x: timeForEachPoint }, indices)
+
+        // console.log(graphData)
+        while (graphData[0].y.length > MaxNumOfPoints) {
+            // for (let i = 0; i < numOfPoints; i++) {
+            graphData.forEach(channel => channel.y.shift())
+            // }
+>>>>>>> Stashed changes
         }
     })
     while (graphData[0].y.length > MaxNumOfPoints) {
@@ -121,7 +174,7 @@ socket.on('eeg', function (msg) {
     }
 
     if (rawData.length >= numOfPoints) {
-        addData(chart, rawData)
+        // addData(chart, rawData)
         rawData = []
     }
 })

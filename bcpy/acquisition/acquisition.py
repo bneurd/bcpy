@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from ..realtimevisualization import realtimevisualization
 
 
 class AcquisitionError(Exception):
@@ -7,38 +6,16 @@ class AcquisitionError(Exception):
 
 
 class Acquisition(ABC):
+    """Acquisition abstract class
     """
-    """
-
-    def __init__(self, visualization):
-        self.visualization = realtimevisualization(visualization)
 
     @abstractmethod
     def get_data(self):
-        return self, AcquisitionData()
+        return iter()
 
     @abstractmethod
     def terminate(self):
         pass
-
-
-class AcquisitionData():
-    def __init__(self):
-        self.marker = -1
-        # eeg timestamp, eeg data channels, markers
-        self.data = [[], [], []]
-
-    def add_data(self, timestamp, eeg):
-        self.data[0].append(timestamp)
-        self.data[1].append(eeg)
-        self.data[2].append(self.marker)
-        # print(self.marker)
-
-    def set_marker(self, marker):
-        self.marker = marker
-
-    def get_values(self):
-        return self.data
 
 
 acquisition_strategies = {}
@@ -76,12 +53,26 @@ def register_acquisition(cls):
     return cls
 
 
-def getdata(a, *args, **kargs):
-    if isinstance(a, str):
-        if not (a in acquisition_strategies):
-            raise AcquisitionError("Unknown acquisition {a}".format(a=a))
+def getdata(strategy, *args, **kargs):
+    """Get data using some strategy
 
-        acq = acquisition_strategies[a](**kargs)
-        return acq.get_data(*args)
-    elif isinstance(a, Acquisition):
-        return a.get_data(*args)
+    Parameters
+    ----------
+    - strategy: `str` or `Acquisition`
+        Strategy to get data
+
+    Returns
+    -------
+    - data: `generator` of `[n_channels]`
+    """
+
+    if isinstance(strategy, str):
+        if not (strategy in acquisition_strategies):
+            raise AcquisitionError(
+                "Unknown acquisition {a}".format(a=strategy))
+
+        acq = acquisition_strategies[strategy](**kargs)
+        # acq.get_data(*args)
+        return acq.get_data()
+    elif isinstance(strategy, Acquisition):
+        return strategy.get_data(*args)
