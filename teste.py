@@ -16,4 +16,4 @@ buffvis = realtimevisualization(
     "WebPage", filter_buff, options)
 
 
-flow(buffvis)
+flow(buffvis, verbose=True)

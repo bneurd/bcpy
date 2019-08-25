@@ -1,4 +1,4 @@
-def flow(iterator):
+def flow(iterator, verbose=False):
     """ Start the experiment flow
 
     * This should be the last function in your flow
@@ -9,6 +9,8 @@ def flow(iterator):
     """
 
     while(True):
+        if verbose:
+            print(next(iterator))
         next(iterator)
 
 
