@@ -1,0 +1,18 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+flake8 = "*"
+
+[packages]
+python-socketio = "*"
+scipy = "*"
+numpy = "*"
+requests = "*"
+pylsl = "==1.12.2"
+Flask = "*"
+
+[requires]
+python_version = "3.6"
