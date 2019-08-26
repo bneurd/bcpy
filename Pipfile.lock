@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "43e069d28815c4eacabcbd007ee9da1cee9a2105611a8648a2dc10c30d83b941"
+            "sha256": "c40af00436ea1df384c2eea1a4ff5e2c9b3af6792d9ec8b6423aeed6ec633189"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -210,6 +210,13 @@
                 "sha256:f0b870f674851ecbfbbbd364d6b5cbdff9dcedbc7f3f5e18a6891057f21fe399"
             ],
             "version": "==19.1.0"
+        },
+        "autopep8": {
+            "hashes": [
+                "sha256:4d8eec30cc81bc5617dbf1218201d770dc35629363547f17577c61683ccfb3ee"
+            ],
+            "index": "pypi",
+            "version": "==1.4.4"
         },
         "babel": {
             "hashes": [
@@ -443,7 +450,6 @@
         },
         "pyrsistent": {
             "hashes": [
-                "sha256:21898d4b38378cffd2fa4eb93b5d0fb4647ce6756291e9c9c8e39a48e1415837",
                 "sha256:34b47fa169d6006b32e99d4b3c4031f155e6e68ebcc107d6454852e8e0ee6533"
             ],
             "version": "==0.15.4"

@@ -7,10 +7,13 @@ Welcome to BCPY's documentation!
 ================================
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Contents:
+   :maxdepth: 2
+   :caption: Documentation:
 
-   bcpy
+.. toctree::
+   :maxdepth: 2
+   :caption: Package API:
+
    bcpy.acquisition
    bcpy.processing
    bcpy.utils

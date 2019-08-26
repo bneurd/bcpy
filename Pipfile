@@ -7,6 +7,7 @@ verify_ssl = true
 flake8 = "*"
 sphinx = "*"
 jupyter-sphinx-theme = "*"
+autopep8 = "*"
 
 [packages]
 python-socketio = "*"
