@@ -29,17 +29,17 @@ def register_acquisition(cls):
 
     Parameters
     ----------
-    - cls : subclass of bcpy.acquisition.Acquisition
+    cls : subclass of bcpy.acquisition.Acquisition
         subclass that will be register as an avaliable strategy
 
     Returns
     -------
-    - subclass of bcpy.acquisition.Acquisition
+    subclass of bcpy.acquisition.Acquisition
         class passed on parameter
 
     Raises
     ------
-    - AcquisitionError
+    AcquisitionError
         raises when the class is already register on dictionary
     """
 
@@ -58,12 +58,17 @@ def getdata(strategy, *args, **kargs):
 
     Parameters
     ----------
-    - strategy: `str` or `Acquisition`
+    strategy: str or Acquisition
         Strategy to get data
+    *args:
+        Strategy's get_data paramns
+    **kargs:
+        Strategy's instance paramns
 
-    Returns
+    Yield
     -------
-    - data: `generator` of `[n_channels]`
+    data: :obj:`list` of n_channels
+        Data for all channels on one interation
     """
 
     if isinstance(strategy, str):

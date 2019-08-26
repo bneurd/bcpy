@@ -8,25 +8,34 @@ class LSL(acquisition.Acquisition):
 
     Parameters
     ----------
-    - frequency: `int`
+    frequency: `int`
         frequency of transmission
-    - channels: :obj:`list` of `str`
+    channels: :obj:`list` of `str`
         list of eletrodos utilized on the experiment
-    - marker_strategy: :obj:`MarkerStrategy`, optional
-        stragey to get the markers from the experiment
     """
 
     def __init__(self, fs=128):
         self.frequency = fs
 
-    def is_receiving_data(self):
-        return bool(self.recive_first_data.value)
-
     def terminate(self):
+        """ Stop receive data
+        """
         self.get_data_process.terminate()
         self.visualization.stop()
 
     def get_data(self):
+        """ Resolve a lsl stream of type 'EEG'
+
+        Yield
+        -----
+        data: :obj:`list` of n_channels
+            Data for all channels on one interation
+
+        Raises
+        ------
+        Exception:
+            Fails to resolve data from stream
+        """
         # first resolve an EEG stream on the lab network
         print("looking for an EEG stream...")
         streams = pylsl.resolve_stream('type', 'EEG')

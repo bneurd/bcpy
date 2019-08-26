@@ -1,1 +1,3 @@
-from .processing import apply_filter, notch
+from .processing import bandfilter, notch
+
+__all__ = ['bandfilter', 'notch']

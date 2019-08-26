@@ -83,7 +83,7 @@ class Notch(Filter):
         return signal.sfiltfilt(self.b, self.a, data, axis=-1)
 
 
-def apply_filter(dataIter, lo=None, hi=None, **kargs):
+def bandfilter(dataIter, lo=None, hi=None, **kargs):
     if lo and hi:
         while(True):
             buff = np.array(next(dataIter)).T
@@ -91,11 +91,11 @@ def apply_filter(dataIter, lo=None, hi=None, **kargs):
     elif lo:
         while(True):
             buff = np.array(next(dataIter)).T
-            yield(ButterLowPass(lo, **kargs).process(buff).T)
+            yield(ButterHighPass(lo, **kargs).process(buff).T)
     elif hi:
         while(True):
             buff = np.array(next(dataIter)).T
-            yield(ButterHighPass(hi, **kargs).process(buff).T)
+            yield(ButterLowPass(hi, **kargs).process(buff).T)
 
 
 def notch(dataIter, cutoff, **kargs):
