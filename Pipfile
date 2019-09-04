@@ -16,6 +16,7 @@ numpy = "*"
 requests = "*"
 pylsl = "==1.12.2"
 Flask = "*"
+flask-cors = "*"
 
 [requires]
 python_version = "3.7"

@@ -24,7 +24,7 @@ acquisition_strategies = {}
 def register_acquisition(cls):
     """ register a new strategy to acquisition dictionary
 
-    This function was made to be used as decorator on 
+    This function was made to be used as decorator on
     subclass of bcpy.acquisition.Acquisition
 
     Parameters

@@ -1,4 +1,5 @@
 import pylsl
+import types
 from . import acquisition
 
 
@@ -14,7 +15,7 @@ class LSL(acquisition.Acquisition):
         list of eletrodos utilized on the experiment
     """
 
-    def __init__(self, fs=128):
+    def __init__(self, fs: int = 128):
         self.frequency = fs
 
     def terminate(self):
@@ -23,7 +24,7 @@ class LSL(acquisition.Acquisition):
         self.get_data_process.terminate()
         self.visualization.stop()
 
-    def get_data(self):
+    def get_data(self) -> types.GeneratorType:
         """ Resolve a lsl stream of type 'EEG'
 
         Yield
