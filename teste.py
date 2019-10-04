@@ -1,6 +1,6 @@
 from bcpy.acquisition import getdata
 from bcpy.realtimevisualization import realtimevisualization
-from bcpy.utils import makebuff, flow
+from bcpy.utils import makebuff, flow, save, buff_to_single
 from bcpy.processing import bandfilter
 
 options = {
@@ -15,5 +15,5 @@ filter_buff = bandfilter(filter_buff, lo=8, hi=50)
 buffvis = realtimevisualization(
     "WebPage", filter_buff, options)
 
-
-flow(buffvis, verbose=True)
+save('data.json', buff_to_single(buffvis), options["channels"], options["fs"])
+# flow(buffvis, verbose=True)

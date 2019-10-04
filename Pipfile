@@ -8,6 +8,7 @@ flake8 = "*"
 sphinx = "*"
 jupyter-sphinx-theme = "*"
 autopep8 = "*"
+rope = "*"
 
 [packages]
 python-socketio = "*"
