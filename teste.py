@@ -8,12 +8,12 @@ options = {
     "fs": 256
 }
 
-data = getdata("LSL")
+data = getdata("FileBuffer", filename="data.json")
 buff = makebuff(data, 256)
 filter_buff = bandfilter(buff, lo=8, hi=50)
 filter_buff = bandfilter(filter_buff, lo=8, hi=50)
 buffvis = realtimevisualization(
     "WebPage", filter_buff, options)
 
-save('data.json', buff_to_single(buffvis), options["channels"], options["fs"])
-# flow(buffvis, verbose=True)
+# save('data.json', buff_to_single(buffvis), options["channels"], options["fs"])
+flow(buffvis, verbose=True)
