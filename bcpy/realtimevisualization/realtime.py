@@ -1,6 +1,7 @@
-from abc import ABC, abstractmethod
 import time
 import threading
+from .._handlers import properties
+from abc import ABC, abstractmethod
 
 
 class RealtimeError(Exception):
@@ -75,7 +76,7 @@ def realtimevisualization(r, dataIter, options):
     -------
     - data: `generator` of `[n_channels]`
     """
-
+    props = properties.Properties()
     if isinstance(r, str):
         if not (r in realtime_strategies):
             raise RealtimeError("Unknown realtime strategy {r}".format(r=r))
@@ -85,20 +86,22 @@ def realtimevisualization(r, dataIter, options):
         time.sleep(0.5)
         acq.start()
 
-        # TODO: put this while True inside thread
-        while (True):
+        props.realtime_inst = acq
+
+        while True:
             data = next(dataIter)
+            yield(data)
             t = threading.Thread(target=acq.show_realtime_data, args=(data,))
             t.start()
-            # TODO: Remove this yield
-            yield(data)
             t.join()
     elif isinstance(r, Realtime):
         acq = r
-        # TODO: Same in here
-        while (True):
+
+        props.realtime_inst = acq
+
+        while True:
             data = next(dataIter)
+            yield(data)
             t = threading.Thread(target=acq.show_realtime_data, args=(data,))
             t.start()
-            yield(data)
             t.join()

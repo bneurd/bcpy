@@ -1,7 +1,7 @@
-from abc import ABC, abstractmethod
-from scipy import signal
-import numpy as np
 import types
+import numpy as np
+from scipy import signal
+from abc import ABC, abstractmethod
 
 
 class FilterError(Exception):

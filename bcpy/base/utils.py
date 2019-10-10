@@ -1,5 +1,10 @@
 import types
 import json
+import sys
+from .._handlers import stop_execution, properties
+
+
+props = properties.Properties()
 
 
 def flow(iterator: types.GeneratorType, verbose: bool = False) -> None:
@@ -15,11 +20,14 @@ def flow(iterator: types.GeneratorType, verbose: bool = False) -> None:
         show iterators content (default to False)
     """
 
-    while(True):
+    stop_execution.handle_stop_signal()
+    while props.running:
         if verbose:
             print(next(iterator))
             continue
         next(iterator)
+    print("main process stoped")
+    stop_execution.clean_all_process()
 
 
 def makebuff(

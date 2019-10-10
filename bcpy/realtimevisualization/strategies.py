@@ -1,6 +1,5 @@
 from . import realtime
 from ..serve import flask
-import requests
 import socketio
 import json
 import numpy as np
@@ -22,14 +21,17 @@ class WebPage(realtime.Realtime):
 
     def __init__(self, options):
         super().__init__(options)
-        flask.start_server()
+        self.server_process = flask.start_server()
         self.sio = socketio.Client()
 
     def start(self):
         self.sio.connect('http://localhost:5000')
 
     def stop(self):
-        requests.post('http://localhost:5000/shutdown')
+        self.server_process.kill()
+        time.sleep(1)
+        print(self.server_process)
+        # self.server_process.join()
 
     def send_data(self, eeg):
         self.sio.emit(

@@ -12,11 +12,7 @@ class Acquisition(ABC):
     @abstractmethod
     def get_data(self):
         return iter()
-
-    @abstractmethod
-    def terminate(self):
-        pass
-
+        
 
 acquisition_strategies = {}
 

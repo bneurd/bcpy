@@ -20,12 +20,6 @@ class LSL(acquisition.Acquisition):
     def __init__(self, fs: int = 128):
         self.frequency = fs
 
-    def terminate(self):
-        """ Stop receive data
-        """
-        self.get_data_process.terminate()
-        self.visualization.stop()
-
     def get_data(self) -> types.GeneratorType:
         """ Resolve a lsl stream of type 'EEG'
 
@@ -41,12 +35,12 @@ class LSL(acquisition.Acquisition):
         """
         # first resolve an EEG stream on the lab network
         print("looking for an EEG stream...")
-        streams = pylsl.resolve_stream('type', 'EEG')
+        streams = pylsl.resolve_byprop('type', 'EEG', timeout=30)
 
-        try:
-            inlet = pylsl.StreamInlet(streams[0])
-        except Exception as ex:
-            raise ex
+        if (len(streams) == 0):
+            raise acquisition.AcquisitionError(
+                'unable to resolve an EEG stream')
+        inlet = pylsl.StreamInlet(streams[0])
 
         while True:
             chunk, timestamp = inlet.pull_chunk()
@@ -61,12 +55,6 @@ class LSL(acquisition.Acquisition):
 class FileBuffer(acquisition.Acquisition):
     def __init__(self, filename: str = 'data.json'):
         self.filename = filename
-
-    def terminate(self):
-        """ Stop receive data
-        """
-        self.get_data_process.terminate()
-        self.visualization.stop()
 
     def get_data(self) -> types.GeneratorType:
         with open(self.filename) as source:
