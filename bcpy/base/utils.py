@@ -1,6 +1,5 @@
 import types
 import json
-import sys
 from .._handlers import stop_execution, properties
 
 
@@ -26,8 +25,6 @@ def flow(iterator: types.GeneratorType, verbose: bool = False) -> None:
             print(next(iterator))
             continue
         next(iterator)
-    print("main process stoped")
-    stop_execution.clean_all_process()
 
 
 def makebuff(

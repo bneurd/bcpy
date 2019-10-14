@@ -3,9 +3,12 @@ from flask_cors import CORS
 import socketio
 from multiprocessing import Process
 import logging
+import signal
 
 
 def run():
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
     sio = socketio.Server(cors_allowed_origins='*')
     app = Flask(__name__)
     CORS(app)

@@ -28,10 +28,8 @@ class WebPage(realtime.Realtime):
         self.sio.connect('http://localhost:5000')
 
     def stop(self):
-        self.server_process.kill()
-        time.sleep(1)
-        print(self.server_process)
-        # self.server_process.join()
+        self.sio.disconnect()
+        self.server_process.terminate()
 
     def send_data(self, eeg):
         self.sio.emit(
