@@ -14,7 +14,7 @@ class WebPage(realtime.Realtime):
 
     Parameters
     ----------
-    - options : config `dict` with: 
+    - options : config `dict` with:
         - `channels` names in `str`
         - `fs` in `number`
     """
