@@ -40,7 +40,7 @@ class LSL(acquisition.Acquisition):
         if (len(streams) == 0):
             raise acquisition.AcquisitionError(
                 'unable to resolve an EEG stream')
-        inlet = pylsl.StreamInlet(streams[0])
+        inlet = pylsl.StreamInlet(streams[0], recover=False)
 
         while True:
             chunk, timestamp = inlet.pull_chunk()
