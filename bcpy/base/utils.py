@@ -1,12 +1,16 @@
 import types
 import json
+from typing import Callable, Union, Any
 from .._handlers import stop_execution, properties
 
 
 props = properties.Properties()
 
 
-def flow(iterator: types.GeneratorType, verbose: bool = False) -> None:
+def flow(iterator: types.GeneratorType,
+         verbose: bool = False,
+         function: Callable[[Union[list, Any]], None] = lambda x: None
+         ) -> None:
     """ Start the experiment flow
 
     **This should be the last function in your flow**
@@ -21,10 +25,10 @@ def flow(iterator: types.GeneratorType, verbose: bool = False) -> None:
 
     stop_execution.handle_stop_signal()
     while props.running:
+        value = next(iterator)
         if verbose:
-            print(next(iterator))
-            continue
-        next(iterator)
+            print(value)
+        function(value)
 
 
 def makebuff(
@@ -96,3 +100,25 @@ def save(filename: str,
             {"timestamp": timestamp, "data": data.tolist(), "marker": marker})
         timestamp = _update_timestamp(timestamp, frequency)
         _save_file(filename, data_structure)
+
+
+def create_window(generator: types.GeneratorType,
+                  window_size: int,
+                  intersection: int = None) -> types.GeneratorType:
+    if not intersection:
+        intersection = window_size / 2
+    window = []
+    is_windowing = True
+    num_intersection = 0
+    while props.running:
+        data = next(generator)
+        window.append(data)
+        if window_size == len(window) and is_windowing:
+            is_windowing = False
+            yield window
+        if window_size < len(window):
+            num_intersection += 1
+            window.pop(0)
+        if num_intersection == intersection:
+            num_intersection = 0
+            yield window

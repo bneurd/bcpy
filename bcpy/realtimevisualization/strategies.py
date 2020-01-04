@@ -19,6 +19,9 @@ class WebPage(realtime.Realtime):
         - `fs` in `number`
     """
 
+    greater_diff = 1
+    last_call_time = 0
+
     def __init__(self, options):
         super().__init__(options)
         self.server_process = flask.start_server()
@@ -39,7 +42,14 @@ class WebPage(realtime.Realtime):
                                     "timestamp": time.time() * 1000
                                     }))
 
-    def show_realtime_data(self, data):
+    def show_realtime_data(self, data, first=False):
+        time_start = time.time()
+        if not first:
+            diff = time_start - self.last_call_time - self.greater_diff
+            print("diff: ", diff)
+            self.greater_diff = diff if diff > self.greater_diff else self.greater_diff
+        self.last_call_time = time_start
+        print("greater diff: ", self.greater_diff)
         if (len(np.array(data).shape) == 1):
             self.send_data(data)
         else:
@@ -51,5 +61,6 @@ class WebPage(realtime.Realtime):
                 else:
                     self.send_data(each_data)
                 # wait for 1/fs... but consider the send delay
-                time_remain = (1/self.fs) - (time.time() - begin)
+                time_remain = (self.greater_diff/self.fs) - (time.time() - begin)
+                # print('->', minimum_time)
                 time.sleep(time_remain)

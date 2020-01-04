@@ -30,6 +30,13 @@ class Realtime(ABC):
 
 
 realtime_strategies = {}
+qlock = threading.Lock()
+
+
+def _visualize(acq, data, minimum_time=None):
+    qlock.acquire()
+    acq.show_realtime_data(data, minimum_time)
+    qlock.release()
 
 
 def register_realtime(cls):
@@ -87,13 +94,23 @@ def realtimevisualization(r, dataIter, options):
         acq.start()
 
         props.realtime_inst = acq
+        intersec = options["intersection"] if "intersection" in options else 0
+
+        data = next(dataIter)
+        greater_diff = 1
+        yield(data)
+        threading.Thread(target=_visualize, args=(
+            acq, data, True)).start()
 
         while True:
             data = next(dataIter)
+            time_before_yield = time.time()
             yield(data)
-            t = threading.Thread(target=acq.show_realtime_data, args=(data,))
-            t.start()
-            t.join()
+            data_to_send = data[intersec:]
+            diff = time.time() - time_before_yield
+            greater_diff = diff if diff > greater_diff else greater_diff
+            threading.Thread(target=_visualize, args=(
+                acq, data_to_send)).start()
     elif isinstance(r, Realtime):
         acq = r
 
@@ -102,6 +119,4 @@ def realtimevisualization(r, dataIter, options):
         while True:
             data = next(dataIter)
             yield(data)
-            t = threading.Thread(target=acq.show_realtime_data, args=(data,))
-            t.start()
-            t.join()
+            threading.Thread(target=_visualize, args=(acq, data)).start()
