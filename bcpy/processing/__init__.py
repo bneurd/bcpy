@@ -1,3 +1,3 @@
-from .processing import bandfilter, notch
+from .processing import bandfilter, notch, standard_scaller
 
-__all__ = ['bandfilter', 'notch']
+__all__ = ['bandfilter', 'notch', 'standard_scaller']

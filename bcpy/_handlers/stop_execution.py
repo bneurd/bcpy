@@ -2,11 +2,12 @@ from . import properties
 from signal import signal, SIGINT
 
 
-def _interrupt_gracefully(signal_received, frame):
+def _interrupt_gracefully(signal_received=None, frame=None):
     print("\nStopping...")
     props = properties.Properties()
     server = props.realtime_inst
-    server.stop()
+    if server and server.stop:
+        server.stop()
     props.running = False
 
 

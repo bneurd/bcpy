@@ -18,6 +18,7 @@ requests = "*"
 pylsl = "==1.12.2"
 Flask = "*"
 flask-cors = "*"
+sklearn = "*"
 
 [requires]
 python_version = "3.7"

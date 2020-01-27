@@ -27,9 +27,10 @@ def process(psd_value):
     f, psd_values = psd_value
     bands = [0, 0, 0, 0]
     bands[0] = band_extract(f, psd_values, 8, 12)
-    bands[1] = band_extract(f, psd_values, 5, 7)
-    bands[2] = band_extract(f, psd_values, 12, 30)
-    bands[3] = band_extract(f, psd_values, 25, 100)
+    bands[1] = band_extract(f, psd_values, 4, 7)
+    bands[2] = band_extract(f, psd_values, 13, 30)
+    bands[3] = band_extract(f, psd_values, 31, 50)
+    bands[3] = band_extract(f, psd_values, 1, 3)
 
     maxIndex = np.argmax(bands)
 
@@ -42,4 +43,4 @@ def process(psd_value):
         print(0)
 
 
-flow(psd_buff, function=process)
+flow(psd_buff, function=process, n_of_iterations=3)

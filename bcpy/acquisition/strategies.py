@@ -64,3 +64,16 @@ class FileBuffer(acquisition.Acquisition):
             for data_per_timestamp in data:
                 yield data_per_timestamp['data']
                 time.sleep(1/fs)
+
+
+@acquisition.register_acquisition
+class Custom(acquisition.Acquisition):
+    def __init__(self, get_data: types.FunctionType, get_label: types.FunctionType):
+        self.get_data_custom = get_data
+        self.get_label_custom = get_label
+
+    def get_data(self) -> types.GeneratorType:
+        return self.get_data_custom()
+
+    def get_label(self) -> types.GeneratorType:
+        return self.get_label_custom()

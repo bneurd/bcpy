@@ -1,5 +1,6 @@
 import types
 import json
+import sys
 from typing import Callable, Union, Any
 from .._handlers import stop_execution, properties
 
@@ -8,8 +9,9 @@ props = properties.Properties()
 
 
 def flow(iterator: types.GeneratorType,
+         n_of_iterations: int = None,
          verbose: bool = False,
-         function: Callable[[Union[list, Any]], None] = lambda x: None
+         function: Callable[[Union[list, Any]], None] = lambda x: None,
          ) -> None:
     """ Start the experiment flow
 
@@ -23,12 +25,20 @@ def flow(iterator: types.GeneratorType,
         show iterators content (default to False)
     """
 
+    iterations = 0
     stop_execution.handle_stop_signal()
     while props.running:
-        value = next(iterator)
+        if n_of_iterations is not None and iterations >= n_of_iterations:
+            break
+        try:
+            value = next(iterator)
+        except Exception:
+            break
         if verbose:
             print(value)
         function(value)
+        iterations += 1
+    stop_execution._interrupt_gracefully()
 
 
 def makebuff(
@@ -118,7 +128,7 @@ def create_window(generator: types.GeneratorType,
             yield window
         if window_size < len(window):
             num_intersection += 1
-            window.pop(0)
+            window = window[1:]
         if num_intersection == intersection:
             num_intersection = 0
             yield window

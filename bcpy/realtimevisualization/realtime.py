@@ -94,23 +94,23 @@ def realtimevisualization(r, dataIter, options):
         acq.start()
 
         props.realtime_inst = acq
-        intersec = options["intersection"] if "intersection" in options else 0
+        intersec = options["intersection"] - \
+            1 if "intersection" in options else 0
 
         data = next(dataIter)
-        greater_diff = 1
         yield(data)
         threading.Thread(target=_visualize, args=(
-            acq, data, True)).start()
+            acq, data)).start()
 
         while True:
+            time_start = time.time()
             data = next(dataIter)
-            time_before_yield = time.time()
+            time_final = time.time()
+            time_to_pull_data = time_final - time_start
             yield(data)
             data_to_send = data[intersec:]
-            diff = time.time() - time_before_yield
-            greater_diff = diff if diff > greater_diff else greater_diff
             threading.Thread(target=_visualize, args=(
-                acq, data_to_send)).start()
+                acq, data_to_send, time_to_pull_data)).start()
     elif isinstance(r, Realtime):
         acq = r
 

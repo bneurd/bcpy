@@ -1,6 +1,7 @@
 import types
 import numpy as np
 from scipy import signal
+from sklearn.preprocessing import StandardScaler
 from abc import ABC, abstractmethod
 
 
@@ -156,7 +157,7 @@ def notch(bufferGen: types.GeneratorType,
         ...
 
         **var=n -> will apply the filter between cutoff-n and cutoff+n**
-        
+
         (default to 1)
     fs: int, optional
         Sample frequency of the signal (default to 256)
@@ -172,3 +173,13 @@ def notch(bufferGen: types.GeneratorType,
     while(True):
         buff = np.array(next(bufferGen)).T
         yield(Notch(cutoff, var=1, fs=256, order=4).process(buff).T)
+
+
+def standard_scaller(featureGen: types.GeneratorType):
+    ss = StandardScaler()
+    while True:
+        feature = next(featureGen)
+        if (len(feature) > 1):
+            yield feature[0], ss.fit_transform(feature[1])
+        else:
+            yield ss.fit_transform(feature)
