@@ -15,7 +15,7 @@ class Training(ABC):
     """
 
     @abstractmethod
-    def fit(self, X, y) -> Classifier:
+    def fit(self, X, y, **kwargs) -> Classifier:
         pass
 
     @abstractmethod

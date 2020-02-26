@@ -2,7 +2,12 @@ import numpy as np
 from scipy import signal
 
 
-def psd(signal_generator, fs=256, nperseg=None, noverlap=None, average=False, **kargs):
+def psd(signal_generator,
+        fs=256,
+        nperseg=None,
+        noverlap=None,
+        average=False,
+        **kargs):
     while True:
         signal_buff = next(signal_generator)
         signal_buff = np.array(signal_buff).T
