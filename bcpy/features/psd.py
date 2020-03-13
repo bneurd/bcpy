@@ -1,28 +1,14 @@
 import numpy as np
-from scipy import signal
+from mne.time_frequency import psd_multitaper
 
 
-def psd(signal_generator,
-        fs=256,
-        nperseg=None,
-        noverlap=None,
-        average=False,
+def psd(generator,
         **kargs):
     while True:
-        signal_buff = next(signal_generator)
-        signal_buff = np.array(signal_buff).T
-        psds = []
-        for channel in signal_buff:
-            f, psd_signal = signal.welch(channel,
-                                         fs=fs,
-                                         nperseg=nperseg,
-                                         noverlap=noverlap,
-                                         **kargs)
-            psds.append(psd_signal)
-        if average:
-            yield (f, np.average(np.array(psds), axis=0))
-        else:
-            yield (f, np.array(psds))
+        raw = next(generator)
+        raw.plot_psd(fmax=30)
+        psd, freqs = psd_multitaper(raw, fmax=30)
+        yield (freqs, psd)
 
 
 def band_extract(frequencies, psd, fmin, fmax):

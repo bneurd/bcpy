@@ -6,6 +6,7 @@ from bcpy.acquisition import getdata_label
 from bcpy.processing import bandfilter
 from bcpy.features.psd import psd
 from bcpy.learning import training
+from bcpy.base import create_eeg_object, plot_psd
 
 
 def load_data(path):
@@ -19,7 +20,7 @@ def load_data(path):
 def get_custom_data():
     subject = 1
     DIR_PATH = os.path.dirname(__file__)
-    for session in (1,):
+    for session in (2,):
         fpath = os.path.join(DIR_PATH, "multi",
                              "Sub%d_%d_multitarget.mat" % (subject, session))
 
@@ -36,13 +37,13 @@ def load_label(path):
 
     f_freqs = set.intersection(set(t_freqs), set(f_freqs))
 
-    return list(map(lambda x: 1 if x == '8.2' else 0, t_freqs))
+    return t_freqs
 
 
 def get_custom_label():
     subject = 1
     DIR_PATH = os.path.dirname(__file__)
-    for session in (1,):
+    for session in (2,):
         fpath = os.path.join(DIR_PATH, "multi",
                              "Sub%d_%d_multitarget.mat" % (subject, session))
 
@@ -53,9 +54,12 @@ def get_custom_label():
 
 data, labels = getdata_label(
     "Custom", get_data=get_custom_data, get_label=get_custom_label)
-filter_buff1 = bandfilter(data, lo=5, hi=50, order=8)
-filter_buff2 = bandfilter(filter_buff1, lo=5, hi=50, order=8)
-filter_buff3 = bandfilter(filter_buff2, lo=5, hi=50, order=8)
-psds = psd(filter_buff3)
-classifier = training('SVM', psds, labels, verbose=True)
-classifier.save('model.joblib')
+objs = create_eeg_object(data, 256, ["o2"])
+# filter_buff1 = bandfilter(objs, lo=5, hi=50)
+# filter_buff2 = bandfilter(filter_buff1, lo=5, hi=50)
+# filter_buff3 = bandfilter(filter_buff2, lo=5, hi=50)
+psds = psd(objs)
+# x = plot_psd(psds)
+# classifier = training('OneVsAll', x, labels, verbose=True)
+# classifier.save('model.joblib')
+print(next(psds))

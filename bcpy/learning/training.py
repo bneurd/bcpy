@@ -58,6 +58,10 @@ def register_training(cls):
     return cls
 
 
+def remove_channels_dim(X):
+    return X.reshape(X.shape[0], -1)
+
+
 def training(strategy, X_gen, y_gen,
              n_of_iterations: int = None,
              verbose=False,
@@ -98,8 +102,9 @@ def training(strategy, X_gen, y_gen,
         if n_of_iterations is not None and iterations >= n_of_iterations:
             break
         try:
-            data = next(X_gen)
             label = next(y_gen)
+            print(label)
+            data = next(X_gen)
         except Exception:
             break
         if (len(data) > 1):
@@ -109,7 +114,7 @@ def training(strategy, X_gen, y_gen,
         y.append(label)
         iterations += 1
     X = np.array(X)
-    X = X.reshape(X.shape[0], -1)
+    X = remove_channels_dim(X)
     y = np.array(y)
     if verbose:
         print(f'X shape: {X.shape}, y shape: {y.shape}')

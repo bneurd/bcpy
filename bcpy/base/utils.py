@@ -1,8 +1,11 @@
 import types
 import json
-import sys
+import mne
+import numpy as np
 from typing import Callable, Union, Any
 from .._handlers import stop_execution, properties
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
 
 
 props = properties.Properties()
@@ -132,3 +135,31 @@ def create_window(generator: types.GeneratorType,
         if num_intersection == intersection:
             num_intersection = 0
             yield window
+
+
+def create_eeg_object(generator: types.GeneratorType,
+                      fs: int,
+                      channels: list):
+
+    while True:
+        data = np.array(next(generator)).T
+        print(data.shape)
+        info = mne.create_info(ch_names=channels, sfreq=fs, ch_types=[
+                               "eeg" for i in range(data.shape[0])])
+        yield mne.io.RawArray(data, info, verbose=False)
+
+
+def plot_psd(generator):
+    while True:
+        freq, psd = next(generator)
+        ax = plt.axes()
+        # values = {1: 7.5, 2: 6.0, 3: 8.2, 4: 7.0}
+        # # values = {1: 37, 2: 40, 3: 43}
+        # evoked_value = values[epoch.events[0][2]]
+        # ax.axvline(evoked_value, linewidth=2, c='#ff7f00', ls='dashed')
+        ax.plot(freq, psd[0], color='#2a76cc')
+        ax.set(ylabel='Densidade Espectral de Potência (Multitaper)',
+               xlabel='Frequência (Hz)')
+        plt.show()
+
+        yield (freq, psd)

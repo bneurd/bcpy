@@ -86,9 +86,7 @@ class Notch(Filter):
 
 def bandfilter(bufferGen: types.GeneratorType,
                lo: float = None,
-               hi: float = None,
-               fs: int = 256,
-               order: int = 4) -> types.GeneratorType:
+               hi: float = None) -> types.GeneratorType:
     """ apply a butterworth filter to de data
 
     Parameters
@@ -115,22 +113,10 @@ def bandfilter(bufferGen: types.GeneratorType,
         When none of the **hi** and **lo** are specify
     """
 
-    if lo and hi:
-        while(True):
-            buff = np.array(next(bufferGen)).T
-            yield(ButterBandPass(lo, hi, fs=256, order=4).process(buff).T)
-
-    elif lo:
-        while(True):
-            buff = np.array(next(bufferGen)).T
-            yield(ButterHighPass(lo, fs=256, order=4).process(buff).T)
-
-    elif hi:
-        while(True):
-            buff = np.array(next(bufferGen)).T
-            yield(ButterLowPass(hi, fs=256, order=4).process(buff).T)
-
-    raise ValueError("at least one of hi and lo must be specified")
+    while True:
+        raw = next(bufferGen)
+        raw.filter(l_freq=lo, h_freq=hi, verbose=False)
+        yield raw
 
 
 def notch(bufferGen: types.GeneratorType,

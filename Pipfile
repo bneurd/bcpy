@@ -19,6 +19,8 @@ pylsl = "==1.12.2"
 Flask = "*"
 flask-cors = "*"
 sklearn = "*"
+mne = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.7"
