@@ -1,46 +1,35 @@
 import numpy as np
 from bcpy.acquisition import getdata
-from bcpy.base import create_window, flow
+from bcpy.base import create_window, flow, create_eeg_object
 from bcpy.processing import bandfilter
-from bcpy.features.psd import psd, band_extract
-from bcpy.realtimevisualization import realtimevisualization
+from bcpy.features import extract
+from bcpy.features.strategies import BandExtract
 
 data = getdata("LSL")
 buff_win = create_window(data, 768, 512)
-filter_buff1 = bandfilter(buff_win, lo=5, hi=50, order=8)
-filter_buff2 = bandfilter(filter_buff1, lo=5, hi=50, order=8)
-filter_buff3 = bandfilter(filter_buff2, lo=5, hi=50, order=8)
-realtime_data = realtimevisualization(
-    "WebPage", filter_buff3, {
-        "channels": ["01", "02", "03", "04", "05", "06", "07", "08"],
-        "fs": 256,
-        "intersection": 512
-    })
-psd_buff = psd(realtime_data, 256, average=True)
+eeg_obj = create_eeg_object(buff_win, fs=250, channels=[
+                            "1", "2", "3", "4", "5", "6", "7", "8"])
+filter_buff1 = bandfilter(eeg_obj, lo=5, hi=50)
+filter_buff2 = bandfilter(filter_buff1, lo=5, hi=50)
+filter_buff3 = bandfilter(filter_buff2, lo=5, hi=50)
+features = extract(filter_buff3, [BandExtract(
+    ['alpha', 'beta', 'gamma', 'delta', 'theta'], average=True)])
 
 
 def scala100(maxValue, minValue):
     return minValue*100/maxValue
 
 
-def process(psd_value):
-    f, psd_values = psd_value
-    bands = [0, 0, 0, 0]
-    bands[0] = band_extract(f, psd_values, 8, 12)
-    bands[1] = band_extract(f, psd_values, 4, 7)
-    bands[2] = band_extract(f, psd_values, 13, 30)
-    bands[3] = band_extract(f, psd_values, 31, 50)
-    bands[3] = band_extract(f, psd_values, 1, 3)
-
-    maxIndex = np.argmax(bands)
+def process(feature):
+    maxIndex = np.argmax(feature)
 
     if (maxIndex == 0):
-        secondMaxIndex = np.argmax(bands[1:])+1
-        maxValue = bands[maxIndex]
-        minValue = bands[secondMaxIndex]
+        secondMaxIndex = np.argmax(feature[1:])+1
+        maxValue = feature[maxIndex]
+        minValue = feature[secondMaxIndex]
         print(scala100(maxValue, minValue))
     else:
         print(0)
 
 
-flow(psd_buff, function=process, n_of_iterations=3)
+flow(features, function=process)

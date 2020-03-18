@@ -4,9 +4,10 @@ import scipy
 import scipy.io
 from bcpy.acquisition import getdata_label
 from bcpy.processing import bandfilter
-from bcpy.features.psd import psd
+from bcpy.features import extract
+from bcpy.features.strategies import BandExtract
 from bcpy.learning import training
-from bcpy.base import create_eeg_object, plot_psd
+from bcpy.base import create_eeg_object
 
 
 def load_data(path):
@@ -17,16 +18,18 @@ def load_data(path):
     return data
 
 
-def get_custom_data():
-    subject = 1
-    DIR_PATH = os.path.dirname(__file__)
-    for session in (2,):
-        fpath = os.path.join(DIR_PATH, "multi",
-                             "Sub%d_%d_multitarget.mat" % (subject, session))
+subject = 5
+session = 1
 
-        epochs = load_data(fpath)
-        for epoch in epochs:
-            yield epoch.T
+
+def get_custom_data():
+    DIR_PATH = os.path.dirname(__file__)
+    fpath = os.path.join(DIR_PATH, "multi",
+                         "Sub%d_%d_multitarget.mat" % (subject, session))
+
+    epochs = load_data(fpath)
+    for epoch in epochs:
+        yield epoch.T
 
 
 def load_label(path):
@@ -41,25 +44,21 @@ def load_label(path):
 
 
 def get_custom_label():
-    subject = 1
     DIR_PATH = os.path.dirname(__file__)
-    for session in (2,):
-        fpath = os.path.join(DIR_PATH, "multi",
-                             "Sub%d_%d_multitarget.mat" % (subject, session))
+    fpath = os.path.join(DIR_PATH, "multi",
+                         "Sub%d_%d_multitarget.mat" % (subject, session))
 
-        labels = load_label(fpath)
-        for label in labels:
-            yield label
+    labels = load_label(fpath)
+    for label in labels:
+        yield label
 
 
 data, labels = getdata_label(
     "Custom", get_data=get_custom_data, get_label=get_custom_label)
 objs = create_eeg_object(data, 256, ["o2"])
-# filter_buff1 = bandfilter(objs, lo=5, hi=50)
-# filter_buff2 = bandfilter(filter_buff1, lo=5, hi=50)
-# filter_buff3 = bandfilter(filter_buff2, lo=5, hi=50)
-psds = psd(objs)
-# x = plot_psd(psds)
-# classifier = training('OneVsAll', x, labels, verbose=True)
-# classifier.save('model.joblib')
-print(next(psds))
+filter_buff1 = bandfilter(objs, lo=5, hi=50)
+filter_buff2 = bandfilter(filter_buff1, lo=5, hi=50)
+filter_buff3 = bandfilter(filter_buff2, lo=5, hi=50)
+features = extract(filter_buff3, [BandExtract([6, 7, 7.5, 8.2], 0.5)])
+classifier = training('SVM', features, labels, verbose=True)
+classifier.save('model.joblib')
