@@ -103,7 +103,6 @@ def training(strategy, X_gen, y_gen,
             break
         try:
             label = next(y_gen)
-            print(label)
             data = next(X_gen)
         except Exception:
             break

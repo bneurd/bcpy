@@ -10,7 +10,7 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 class SVM(Training):
 
     def __init__(self, **kargs):
-        self.clf = SVC(kernel="linear", C=2)
+        self.clf = SVC(kernel="linear")
 
     def fit(self, X, y):
         self.clf.fit(X, y)

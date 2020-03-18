@@ -20,6 +20,9 @@ class LSL(acquisition.Acquisition):
     def __init__(self, fs: int = 128):
         self.frequency = fs
 
+    def get_label(self):
+        pass
+
     def get_data(self) -> types.GeneratorType:
         """ Resolve a lsl stream of type 'EEG'
 
@@ -68,7 +71,9 @@ class FileBuffer(acquisition.Acquisition):
 
 @acquisition.register_acquisition
 class Custom(acquisition.Acquisition):
-    def __init__(self, get_data: types.FunctionType, get_label: types.FunctionType):
+    def __init__(self,
+                 get_data: types.FunctionType,
+                 get_label: types.FunctionType):
         self.get_data_custom = get_data
         self.get_label_custom = get_label
 
