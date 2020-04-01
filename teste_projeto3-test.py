@@ -1,71 +1,107 @@
+import os
 import numpy as np
-from scipy.io import loadmat
-from bcpy.acquisition import getdata_label
-from bcpy.features.psd import psd
+from re import search
+from subprocess import getoutput as gop
+from bcpy.features import extract
+from bcpy.features.strategies import PSD
 from bcpy.learning import load_training, score
-from bcpy.processing import bandfilter
+from bcpy.base import create_eeg_object
+from bcpy.processing import drop_channels, car
+from bcpy.acquisition import getdata_label
 
-subject = 1
-
-
-def get_custom_data():
-    m_of_m = list()
-    new_data = list()
-    trial = list()
-    for letter in 'e':
-        print('Subject', subject, '/ Session', letter)
-        data = loadmat('data/T0{:02d}{}.mat'.format(subject, letter))
-        calc = list()
-        for i in range(1, len(data['DIN_1'][3])):
-            ids = data['DIN_1'][3][i - 1][0][0], data['DIN_1'][3][i][0][0]
-            interval = ids[1] - ids[0]
-            # interval more than 50 is other target
-            if interval > 50:
-                calc.append(ids)
-        indexes = list()
-        for i in range(1, len(calc)):
-            first = calc[i - 1][1]
-            last = calc[i][0]
-            # difference more than 1000 qualify a trial
-            if (last - first) > 1000:
-                indexes.append((last, first))
-        indexes.append((data['DIN_1'][3][-1][0][0], calc[-1][1]))
-        # get the minor size of trial
-        minor = min([(l - f) for l, f in indexes])
-        m_of_m.append(minor)
-        trial.append(np.array([data['eeg'][:, f:f+1205] for l, f in indexes]))
-
-    print('Finished!')
-    new_data = np.array(trial)[0]
-
-    print(new_data.shape)
-
-    for trial in new_data:
-        yield trial.T
+USELESS_CHANNELS = ['x', 'nd', 'y']
+USEFULL_CHANNELS = ["c3", "cp4", "cp5"]
 
 
-def get_custom_label():
-    for letter in 'e':
-        print('Subject', subject, '/ Session', letter)
-        data = loadmat('data/T0{:02d}{}.mat'.format(subject, letter))
-        labels = [l[0][0] for l in data['labels'][0]]
+class CustomAcquisition():
+    def __init__(self, path):
+        self.subjects = []
+        self.ch_names = []
+        self.labels = []
+        self.folder_path = path
+        self.load_data_with_label()
 
-    print('Finished!')
+    def load_data_with_label(self):
+        create_ch_name = False
+        subjects = []
+        labels = []
 
-    labels = np.array(labels)
-    print(labels.shape)
+        # get all dirs inside folder
+        folder = gop('ls {}'.format(self.folder_path)).split('\n')
+        # for all dir insider folder
+        for types in folder:
+            if (not os.path.isdir('{}/{}'.format(self.folder_path, types))):
+                continue
+            label_search = search('^co2(?P<label>\w{1})', types)
 
-    for label in labels:
-        yield label
+            files = gop('ls {}/{}'.format(self.folder_path, types)).split('\n')
+            # 2ª dimensão dos dados contendo as sessões (trials)
+            trials = list()
+
+            # for all file in files
+            for f in files:
+                if (label_search.group("label") == "a"):
+                    labels.append(1)
+                else:
+                    labels.append(0)
+                arquivo = open('{}/{}/{}'.format(self.folder_path, types, f))
+                text = arquivo.readlines()
+                # 3ª dimensão dos dados contendo os canais (eletrodos)
+                chs = list()
+                # 4ª dimensão dos dados contendo os valores em milivolts
+                values = list()
+                # for each line inside a file
+                for line in text:
+                    # ex: "# FP1 chan 0"
+                    # look if this line is a new eletrodo info
+                    t = search('(?P<ch_name>\w{1,3}) chan \d{1,2}', line)
+                    # ex: "0 FP1 0 -8.921"
+                    # or if is a data line
+                    p = search(
+                        '^\d{1,3}\ \w{1,3}\ \d{1,3}\ (?P<value>.+$)', line)
+
+                    # if has a eeg data
+                    if p:
+                        values.append(float(p.group('value')))
+                    # mudou para outro eletrodo
+                    elif t:
+                        if values:
+                            chs.append(values)
+                            values = list()
+                        if not create_ch_name:
+                            self.ch_names.append(t.group('ch_name').lower())
+
+                # end for line
+                # append last channel
+                chs.append(values)
+                create_ch_name = True
+
+                # append all channels to one trial
+                trials.append(chs)
+                arquivo.close()
+            # append all trials to one subject
+            subjects.append(trials)
+            self.subjects = np.array(subjects)
+            self.labels = np.array(labels)
+
+    def get_data(self):
+        trials = self.subjects.reshape(600, 64, 256)
+        for trial in trials:
+            yield trial.T
+
+    def get_label(self):
+        for label in self.labels:
+            yield label
 
 
-classifier = load_training('OneVsAll', 'model.joblib')
+classifier = load_training('SVM', 'model.joblib')
 
+test_data = CustomAcquisition('SMNI_CMI_TEST')
 data, labels = getdata_label(
-    "Custom", get_data=get_custom_data, get_label=get_custom_label)
-filter_buff1 = bandfilter(data, lo=5, hi=25, order=8, fs=250)
-filter_buff2 = bandfilter(filter_buff1, lo=5, hi=25, order=8, fs=250)
-filter_buff3 = bandfilter(filter_buff2, lo=5, hi=25, order=8, fs=250)
-psds = psd(filter_buff3, fs=250)
-result = score(classifier, psds, labels, verbose=True)
+    "Custom", get_data=test_data.get_data, get_label=test_data.get_label)
+objs = create_eeg_object(data, 256, channels=test_data.ch_names)
+dropped_channels_objs = drop_channels(objs, USELESS_CHANNELS)
+car_objs = car(dropped_channels_objs, ref_channels=USEFULL_CHANNELS)
+features = extract(car_objs, [PSD()])
+result = score(classifier, features, labels, verbose=True)
 print(result)

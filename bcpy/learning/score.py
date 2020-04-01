@@ -21,10 +21,7 @@ def score(classifier: Classifier, X_gen, y_gen,
             label = next(y_gen)
         except Exception:
             break
-        if (len(data) > 1):
-            X.append(data[1])
-        else:
-            X.append(data)
+        X.append(data)
         y.append(label)
         iterations += 1
     X = np.array(X)

@@ -1,7 +1,7 @@
 import types
 import numpy as np
 from scipy import signal
-from sklearn.preprocessing import StandardScaler
+from mne import set_eeg_reference
 from abc import ABC, abstractmethod
 
 
@@ -120,52 +120,38 @@ def bandfilter(bufferGen: types.GeneratorType,
 
 
 def notch(bufferGen: types.GeneratorType,
-          cutoff: float,
-          var: float = 1,
-          fs: int = 256,
-          order: int = 4) -> types.GeneratorType:
+          freqs: list(),
+          **kargs) -> types.GeneratorType:
     """ Apply notch filter
 
     Parameters
     ----------
-    bufferGen: `generator` of buffers
+    bufferGen: `generator` of objects
         Generator of the buffers to apply the filter
-    cutoff: float
+    freqs: `float` | `list` of `float`
         frequency to apply the notch filter
-    var: float, option
-        frequency variance
-        this will tell what is the exact interval to apply the notch filter
-
-        **var=0.5 -> will apply the filter between cutoff-0.5 and cutoff+0.5**
-
-        **var=1 -> will apply the filter between cutoff-1 and cutoff+1**
-
-        ...
-
-        **var=n -> will apply the filter between cutoff-n and cutoff+n**
-
-        (default to 1)
-    fs: int, optional
-        Sample frequency of the signal (default to 256)
-    order: int, optional
-        Filter order (default to 4)
 
     Yield
     -----
-    filterd buffer: array
-        array with the same buffer, but filtered
+    filterd buffer: object
+        object with notch applied
 
     """
     while(True):
-        buff = np.array(next(bufferGen)).T
-        yield(Notch(cutoff, var=1, fs=256, order=4).process(buff).T)
+        raw = next(bufferGen)
+        raw.notch_filter(freqs, **kargs)
+        yield raw
 
 
-def standard_scaller(featureGen: types.GeneratorType):
-    ss = StandardScaler()
+def car(bufferGen, **kargs):
     while True:
-        feature = next(featureGen)
-        if (len(feature) > 1):
-            yield feature[0], ss.fit_transform(feature[1])
-        else:
-            yield ss.fit_transform(feature)
+        raw = next(bufferGen)
+        inst, data = set_eeg_reference(raw, verbose=False, **kargs)
+        yield inst
+
+
+def drop_channels(bufferGen, channels):
+    while True:
+        raw = next(bufferGen)
+        raw.drop_channels(channels)
+        yield raw

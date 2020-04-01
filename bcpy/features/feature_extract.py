@@ -16,5 +16,6 @@ def extract(gen: types.GeneratorType, strategies: list()):
         for strategy in strategies:
             if not issubclass(type(strategy), FeatureExtract):
                 raise Exception('Feature Extraction function invalid')
-            features.append(strategy.extract(raw_data))
+            feature = strategy.extract(raw_data)
+            features.append(feature)
         yield np.array(features).flatten()

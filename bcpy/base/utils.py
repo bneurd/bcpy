@@ -141,5 +141,5 @@ def create_eeg_object(generator: types.GeneratorType,
     while True:
         data = np.array(next(generator)).T
         info = mne.create_info(ch_names=channels, sfreq=fs, ch_types=[
-                               "eeg" for i in range(data.shape[0])])
+                               "eeg" for i in range(len(channels))])
         yield mne.io.RawArray(data, info, verbose=False)

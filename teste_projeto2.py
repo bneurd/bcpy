@@ -18,7 +18,7 @@ def load_data(path):
     return data
 
 
-subject = 5
+subject = 2
 session = 1
 
 

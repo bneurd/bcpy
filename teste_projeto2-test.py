@@ -9,7 +9,7 @@ from bcpy.learning import load_training, score
 from bcpy.processing import bandfilter
 from bcpy.base import create_eeg_object
 
-subject = 5
+subject = 2
 session = 2
 
 
