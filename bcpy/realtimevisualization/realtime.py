@@ -1,3 +1,4 @@
+import mne
 import time
 import threading
 from .._handlers import properties
@@ -83,7 +84,9 @@ def realtimevisualization(r, dataIter, options):
     -------
     - data: `generator` of `[n_channels]`
     """
+
     props = properties.Properties()
+    print(1)
     if isinstance(r, str):
         if not (r in realtime_strategies):
             raise RealtimeError("Unknown realtime strategy {r}".format(r=r))
@@ -99,6 +102,9 @@ def realtimevisualization(r, dataIter, options):
 
         data = next(dataIter)
         yield(data)
+        if (isinstance(data, mne.io.RawArray)):
+            data = data.get_data().T
+
         threading.Thread(target=_visualize, args=(
             acq, data)).start()
 
@@ -108,6 +114,8 @@ def realtimevisualization(r, dataIter, options):
             time_final = time.time()
             time_to_pull_data = time_final - time_start
             yield(data)
+            if (isinstance(data, mne.io.RawArray)):
+                data = data.get_data().T
             data_to_send = data[intersec:]
             threading.Thread(target=_visualize, args=(
                 acq, data_to_send, time_to_pull_data)).start()

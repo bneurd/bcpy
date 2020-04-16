@@ -143,10 +143,11 @@ def notch(bufferGen: types.GeneratorType,
         yield raw
 
 
-def car(bufferGen, **kargs):
+def car(bufferGen, channels, **kargs):
     while True:
         raw = next(bufferGen)
-        inst, data = set_eeg_reference(raw, verbose=False, **kargs)
+        inst, data = set_eeg_reference(
+            raw, verbose=False, ref_channels=channels, **kargs)
         yield inst
 
 

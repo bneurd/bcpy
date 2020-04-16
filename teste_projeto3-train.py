@@ -99,7 +99,7 @@ data, labels = getdata_label(
     "Custom", get_data=test_data.get_data, get_label=test_data.get_label)
 objs = create_eeg_object(data, 256, channels=test_data.ch_names)
 dropped_channels_objs = drop_channels(objs, USELESS_CHANNELS)
-car_objs = car(dropped_channels_objs, ref_channels=USEFULL_CHANNELS)
+car_objs = car(dropped_channels_objs, USEFULL_CHANNELS)
 features = extract(car_objs, [PSD()])
 classifier = training('SVM', features, labels, verbose=True)
 classifier.save('model.joblib')
