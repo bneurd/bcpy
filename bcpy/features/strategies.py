@@ -56,14 +56,6 @@ class BandExtract(feature_extract.FeatureExtract):
 
 
 class PSD(feature_extract.FeatureExtract):
-    AVALIABLE_BANDS = {
-        "alpha": (8.0, 12.0),
-        "beta": (12.0, 40.0),
-        "gamma": (40.0, 100.0),
-        "theta": (4.0, 8.0),
-        "delta": (0.0, 4.0)
-    }
-
     def __init__(self,
                  standard_scaler=True):
         self.standard_scaler = standard_scaler

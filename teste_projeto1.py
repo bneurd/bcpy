@@ -14,8 +14,15 @@ filter_buff1 = bandfilter(eeg_obj, lo=5, hi=50)
 filter_buff2 = bandfilter(filter_buff1, lo=5, hi=50)
 filter_buff3 = bandfilter(filter_buff2, lo=5, hi=50)
 
-viz = realtimevisualization('WebPage', filter_buff3, {"intersection": 512, "fs": 250, "channels": [
-                            "1", "2", "3", "4", "5", "6", "7", "8"]})
+viz = realtimevisualization('WebPage',
+                            filter_buff3,
+                            {
+                                "intersection": 512,
+                                "fs": 250,
+                                "channels": [
+                                    "1", "2", "3", "4", "5", "6", "7", "8"
+                                ]
+                            })
 
 features = extract(viz, [BandExtract(
     ['alpha', 'beta', 'gamma', 'delta', 'theta'], average=True)])
