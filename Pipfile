@@ -1,0 +1,26 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+flake8 = "*"
+sphinx = "*"
+jupyter-sphinx-theme = "*"
+autopep8 = "*"
+rope = "*"
+
+[packages]
+python-socketio = "*"
+scipy = "*"
+numpy = "*"
+requests = "*"
+pylsl = "==1.12.2"
+Flask = "*"
+flask-cors = "*"
+sklearn = "*"
+mne = "*"
+matplotlib = "*"
+
+[requires]
+python_version = "3.7"

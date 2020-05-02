@@ -1,3 +1,4 @@
-from .strategies import LSL
+from .acquisition import getdata, getdata_label
+from . import strategies
 
-from .acquisition import getdata
+__all__ = ['getdata', 'strategies', 'getdata_label']

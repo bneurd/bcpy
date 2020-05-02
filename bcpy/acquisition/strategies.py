@@ -1,4 +1,7 @@
+import time
 import pylsl
+import types
+import json
 from . import acquisition
 
 
@@ -8,33 +11,39 @@ class LSL(acquisition.Acquisition):
 
     Parameters
     ----------
-    - frequency: `int`
+    frequency: `int`
         frequency of transmission
-    - channels: :obj:`list` of `str`
+    channels: :obj:`list` of `str`
         list of eletrodos utilized on the experiment
-    - marker_strategy: :obj:`MarkerStrategy`, optional
-        stragey to get the markers from the experiment
     """
 
-    def __init__(self, fs=128):
+    def __init__(self, fs: int = 128):
         self.frequency = fs
 
-    def is_receiving_data(self):
-        return bool(self.recive_first_data.value)
+    def get_label(self):
+        pass
 
-    def terminate(self):
-        self.get_data_process.terminate()
-        self.visualization.stop()
+    def get_data(self) -> types.GeneratorType:
+        """ Resolve a lsl stream of type 'EEG'
 
-    def get_data(self):
+        Yield
+        -----
+        data: :obj:`list` of n_channels
+            Data for all channels on one interation
+
+        Raises
+        ------
+        Exception:
+            Fails to resolve data from stream
+        """
         # first resolve an EEG stream on the lab network
         print("looking for an EEG stream...")
-        streams = pylsl.resolve_stream('type', 'EEG')
+        streams = pylsl.resolve_byprop('type', 'EEG', timeout=30)
 
-        try:
-            inlet = pylsl.StreamInlet(streams[0])
-        except Exception as ex:
-            raise ex
+        if (len(streams) == 0):
+            raise acquisition.AcquisitionError(
+                'unable to resolve an EEG stream')
+        inlet = pylsl.StreamInlet(streams[0], recover=False)
 
         while True:
             chunk, timestamp = inlet.pull_chunk()
@@ -43,3 +52,33 @@ class LSL(acquisition.Acquisition):
             if (timestamp):
                 for i in range(len(timestamp)):
                     yield(chunk[i])
+
+
+@acquisition.register_acquisition
+class FileBuffer(acquisition.Acquisition):
+    def __init__(self, filename: str = 'data.json'):
+        self.filename = filename
+
+    def get_data(self) -> types.GeneratorType:
+        with open(self.filename) as source:
+            data_structure = json.load(source)
+            fs = data_structure["frequency"]
+            data = data_structure["data"]
+            for data_per_timestamp in data:
+                yield data_per_timestamp['data']
+                time.sleep(1/fs)
+
+
+@acquisition.register_acquisition
+class Custom(acquisition.Acquisition):
+    def __init__(self,
+                 get_data: types.FunctionType,
+                 get_label: types.FunctionType):
+        self.get_data_custom = get_data
+        self.get_label_custom = get_label
+
+    def get_data(self) -> types.GeneratorType:
+        return self.get_data_custom()
+
+    def get_label(self) -> types.GeneratorType:
+        return self.get_label_custom()

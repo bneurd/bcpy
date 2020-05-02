@@ -1,6 +1,8 @@
-from abc import ABC, abstractmethod
+import mne
 import time
 import threading
+from .._handlers import properties
+from abc import ABC, abstractmethod
 
 
 class RealtimeError(Exception):
@@ -29,6 +31,13 @@ class Realtime(ABC):
 
 
 realtime_strategies = {}
+qlock = threading.Lock()
+
+
+def _visualize(acq, data, minimum_time=None):
+    qlock.acquire()
+    acq.show_realtime_data(data, minimum_time)
+    qlock.release()
 
 
 def register_realtime(cls):
@@ -76,6 +85,8 @@ def realtimevisualization(r, dataIter, options):
     - data: `generator` of `[n_channels]`
     """
 
+    props = properties.Properties()
+    print(1)
     if isinstance(r, str):
         if not (r in realtime_strategies):
             raise RealtimeError("Unknown realtime strategy {r}".format(r=r))
@@ -85,20 +96,35 @@ def realtimevisualization(r, dataIter, options):
         time.sleep(0.5)
         acq.start()
 
-        # TODO: put this while True inside thread
-        while (True):
+        props.realtime_inst = acq
+        intersec = options["intersection"] - \
+            1 if "intersection" in options else 0
+
+        data = next(dataIter)
+        yield(data)
+        if (isinstance(data, mne.io.RawArray)):
+            data = data.get_data().T
+
+        threading.Thread(target=_visualize, args=(
+            acq, data)).start()
+
+        while True:
+            time_start = time.time()
             data = next(dataIter)
-            t = threading.Thread(target=acq.show_realtime_data, args=(data,))
-            t.start()
-            # TODO: Remove this yield
+            time_final = time.time()
+            time_to_pull_data = time_final - time_start
             yield(data)
-            t.join()
+            if (isinstance(data, mne.io.RawArray)):
+                data = data.get_data().T
+            data_to_send = data[intersec:]
+            threading.Thread(target=_visualize, args=(
+                acq, data_to_send, time_to_pull_data)).start()
     elif isinstance(r, Realtime):
         acq = r
-        # TODO: Same in here
-        while (True):
+
+        props.realtime_inst = acq
+
+        while True:
             data = next(dataIter)
-            t = threading.Thread(target=acq.show_realtime_data, args=(data,))
-            t.start()
             yield(data)
-            t.join()
+            threading.Thread(target=_visualize, args=(acq, data)).start()

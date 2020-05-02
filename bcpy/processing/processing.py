@@ -1,6 +1,8 @@
-from abc import ABC, abstractmethod
-from scipy import signal
+import types
 import numpy as np
+from scipy import signal
+from mne import set_eeg_reference
+from abc import ABC, abstractmethod
 
 
 class FilterError(Exception):
@@ -16,13 +18,12 @@ class Filter(ABC):
 
         Parameters
         ----------
-        - data: `array like`
+        data: `array like`
             frequency of transmission
 
         Returns
         -------
-        - array
-            process data
+        filtered data : ndarray
         """
         return np.ndarray
 
@@ -83,22 +84,75 @@ class Notch(Filter):
         return signal.sfiltfilt(self.b, self.a, data, axis=-1)
 
 
-def apply_filter(dataIter, lo=None, hi=None, **kargs):
-    if lo and hi:
-        while(True):
-            buff = np.array(next(dataIter)).T
-            yield(ButterBandPass(lo, hi, **kargs).process(buff).T)
-    elif lo:
-        while(True):
-            buff = np.array(next(dataIter)).T
-            yield(ButterLowPass(lo, **kargs).process(buff).T)
-    elif hi:
-        while(True):
-            buff = np.array(next(dataIter)).T
-            yield(ButterHighPass(hi, **kargs).process(buff).T)
+def bandfilter(bufferGen: types.GeneratorType,
+               lo: float = None,
+               hi: float = None) -> types.GeneratorType:
+    """ apply a butterworth filter to de data
+
+    Parameters
+    ----------
+    bufferGen: `generator` of buffers
+        Generator of the buffers to apply the filter
+    lo: float
+        When **lo** is specified, all frequencies under **lo** will be filtered
+    hi: float
+        when **hi** is specified, all frequencies above **hi** will be filtered
+    fs: int, optional
+        Sample frequency of the signal (default to 256)
+    order: int, optional
+        Filter order (default to 4)
+
+    Yield
+    -----
+    filterd buffer: array
+        array with the same buffer, but filtered
+
+    Raises
+    ------
+    ValueError
+        When none of the **hi** and **lo** are specify
+    """
+
+    while True:
+        raw = next(bufferGen)
+        raw.filter(l_freq=lo, h_freq=hi, verbose=False)
+        yield raw
 
 
-def notch(dataIter, cutoff, **kargs):
+def notch(bufferGen: types.GeneratorType,
+          freqs: list(),
+          **kargs) -> types.GeneratorType:
+    """ Apply notch filter
+
+    Parameters
+    ----------
+    bufferGen: `generator` of objects
+        Generator of the buffers to apply the filter
+    freqs: `float` | `list` of `float`
+        frequency to apply the notch filter
+
+    Yield
+    -----
+    filterd buffer: object
+        object with notch applied
+
+    """
     while(True):
-        buff = np.array(next(dataIter)).T
-        yield(Notch(cutoff, **kargs).process(buff).T)
+        raw = next(bufferGen)
+        raw.notch_filter(freqs, **kargs)
+        yield raw
+
+
+def car(bufferGen, channels, **kargs):
+    while True:
+        raw = next(bufferGen)
+        inst, data = set_eeg_reference(
+            raw, verbose=False, ref_channels=channels, **kargs)
+        yield inst
+
+
+def drop_channels(bufferGen, channels):
+    while True:
+        raw = next(bufferGen)
+        raw.drop_channels(channels)
+        yield raw
