@@ -63,7 +63,7 @@ To make the flow defined works, you need to call the flow function as the last t
 
 The flow function by default just executes the other steps, but you can pass a custom function to apply some kind of analysis on the data, like showed on the code bellow. This custom function compares the value between the all the bands extracted and display the percent of how much the alpha band is bigger than the rest.
 
-```
+```python
 def scala100(maxValue, minValue):
     return minValue*100/maxValue
 
